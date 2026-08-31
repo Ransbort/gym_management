@@ -1,0 +1,210 @@
+{
+ "doctype": "DocType",
+ "name": "Gym Settings",
+ "module": "Gym Management",
+ "custom": 0,
+ "istable": 0,
+ "issingle": 1,
+ "is_submittable": 0,
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 0,
+ "field_order": [
+  "section_break_1",
+  "gym_name",
+  "logo",
+  "column_break_1",
+  "gym_email",
+  "gym_phone",
+  "section_break_2",
+  "address",
+  "section_break_3",
+  "default_tax_template",
+  "column_break_2",
+  "default_payment_terms_template",
+  "column_break_3",
+  "default_cost_center",
+  "section_break_4",
+  "membership_expiry_reminder_days",
+  "section_break_5",
+  "bmi_underweight_max",
+  "column_break_4",
+  "bmi_normal_max",
+  "column_break_5",
+  "bmi_overweight_max",
+  "section_break_6",
+  "enable_diet_plans",
+  "column_break_6",
+  "enable_body_measurements"
+ ],
+ "fields": [
+  {
+   "fieldname": "section_break_1",
+   "fieldtype": "Section Break",
+   "label": "Gym Details"
+  },
+  {
+   "fieldname": "gym_name",
+   "fieldtype": "Data",
+   "label": "Gym Name",
+   "reqd": 1
+  },
+  {
+   "fieldname": "logo",
+   "fieldtype": "Attach Image",
+   "label": "Logo"
+  },
+  {
+   "fieldname": "column_break_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "gym_email",
+   "fieldtype": "Data",
+   "label": "Email",
+   "options": "Email"
+  },
+  {
+   "fieldname": "gym_phone",
+   "fieldtype": "Data",
+   "label": "Phone",
+   "options": "Phone"
+  },
+  {
+   "fieldname": "section_break_2",
+   "fieldtype": "Section Break",
+   "label": "Address"
+  },
+  {
+   "fieldname": "address",
+   "fieldtype": "Small Text",
+   "label": "Address"
+  },
+  {
+   "fieldname": "section_break_3",
+   "fieldtype": "Section Break",
+   "label": "Membership Defaults"
+  },
+  {
+   "fieldname": "default_tax_template",
+   "fieldtype": "Link",
+   "label": "Default Tax Template",
+   "options": "Gym Tax Template"
+  },
+  {
+   "fieldname": "column_break_2",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "default_payment_terms_template",
+   "fieldtype": "Link",
+   "label": "Default Payment Terms Template",
+   "options": "Gym Payment Terms Template"
+  },
+  {
+   "fieldname": "column_break_3",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "default_cost_center",
+   "fieldtype": "Link",
+   "label": "Default Cost Center",
+   "options": "Gym Cost Center"
+  },
+  {
+   "fieldname": "section_break_4",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "membership_expiry_reminder_days",
+   "fieldtype": "Int",
+   "label": "Expiry Reminder (days before)",
+   "default": 7
+  },
+  {
+   "fieldname": "section_break_5",
+   "fieldtype": "Section Break",
+   "label": "Body Measurement Ranges (BMI)"
+  },
+  {
+   "fieldname": "bmi_underweight_max",
+   "fieldtype": "Float",
+   "label": "Underweight up to",
+   "default": 18.5
+  },
+  {
+   "fieldname": "column_break_4",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "bmi_normal_max",
+   "fieldtype": "Float",
+   "label": "Normal up to",
+   "default": 24.9
+  },
+  {
+   "fieldname": "column_break_5",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "bmi_overweight_max",
+   "fieldtype": "Float",
+   "label": "Overweight up to (else Obese)",
+   "default": 29.9
+  },
+  {
+   "fieldname": "section_break_6",
+   "fieldtype": "Section Break",
+   "label": "Feature Toggles"
+  },
+  {
+   "fieldname": "enable_diet_plans",
+   "fieldtype": "Check",
+   "label": "Enable Diet Plans",
+   "default": 1
+  },
+  {
+   "fieldname": "column_break_6",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "enable_body_measurements",
+   "fieldtype": "Check",
+   "label": "Enable Body Measurements",
+   "default": 1
+  }
+ ],
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1,
+   "print": 1,
+   "email": 1,
+   "export": 1,
+   "share": 1,
+   "report": 1
+  },
+  {
+   "role": "Gym Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1,
+   "print": 1,
+   "email": 1,
+   "export": 1,
+   "report": 1
+  },
+  {
+   "role": "Gym Staff",
+   "read": 1,
+   "print": 1,
+   "report": 1
+  }
+ ]
+}

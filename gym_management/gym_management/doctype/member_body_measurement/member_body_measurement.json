@@ -1,0 +1,224 @@
+{
+ "doctype": "DocType",
+ "name": "Member Body Measurement",
+ "module": "Gym Management",
+ "custom": 0,
+ "istable": 0,
+ "issingle": 0,
+ "is_submittable": 0,
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1,
+ "field_order": [
+  "naming_series",
+  "member",
+  "measurement_date",
+  "column_break_1",
+  "height_cm",
+  "weight_kg",
+  "section_break_1",
+  "bmi",
+  "column_break_2",
+  "weight_status",
+  "section_break_2",
+  "chest_cm",
+  "column_break_3",
+  "waist_cm",
+  "column_break_4",
+  "hip_cm",
+  "section_break_3",
+  "arms_cm",
+  "column_break_5",
+  "thighs_cm",
+  "column_break_6",
+  "body_fat_percent",
+  "section_break_4",
+  "progress_photo",
+  "column_break_7",
+  "notes"
+ ],
+ "fields": [
+  {
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "label": "Series",
+   "options": "GM-BM-.YYYY.-",
+   "reqd": 1
+  },
+  {
+   "fieldname": "member",
+   "fieldtype": "Link",
+   "label": "Member",
+   "options": "Gym Member",
+   "reqd": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "measurement_date",
+   "fieldtype": "Date",
+   "label": "Measurement Date",
+   "default": "Today",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "column_break_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "height_cm",
+   "fieldtype": "Float",
+   "label": "Height Cm",
+   "reqd": 1
+  },
+  {
+   "fieldname": "weight_kg",
+   "fieldtype": "Float",
+   "label": "Weight Kg",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "section_break_1",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "bmi",
+   "fieldtype": "Float",
+   "label": "Bmi",
+   "read_only": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "column_break_2",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "weight_status",
+   "fieldtype": "Select",
+   "label": "Weight Status",
+   "options": "Underweight\nNormal\nOverweight\nObese",
+   "read_only": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "section_break_2",
+   "fieldtype": "Section Break",
+   "label": "Measurements (cm)"
+  },
+  {
+   "fieldname": "chest_cm",
+   "fieldtype": "Float",
+   "label": "Chest Cm"
+  },
+  {
+   "fieldname": "column_break_3",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "waist_cm",
+   "fieldtype": "Float",
+   "label": "Waist Cm"
+  },
+  {
+   "fieldname": "column_break_4",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "hip_cm",
+   "fieldtype": "Float",
+   "label": "Hip Cm"
+  },
+  {
+   "fieldname": "section_break_3",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "arms_cm",
+   "fieldtype": "Float",
+   "label": "Arms Cm"
+  },
+  {
+   "fieldname": "column_break_5",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "thighs_cm",
+   "fieldtype": "Float",
+   "label": "Thighs Cm"
+  },
+  {
+   "fieldname": "column_break_6",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "body_fat_percent",
+   "fieldtype": "Percent",
+   "label": "Body Fat Percent"
+  },
+  {
+   "fieldname": "section_break_4",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "progress_photo",
+   "fieldtype": "Attach Image",
+   "label": "Progress Photo"
+  },
+  {
+   "fieldname": "column_break_7",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "notes",
+   "fieldtype": "Small Text",
+   "label": "Notes"
+  }
+ ],
+ "autoname": "naming_series:",
+ "naming_rule": "By \"Naming Series\" field",
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1,
+   "print": 1,
+   "email": 1,
+   "export": 1,
+   "share": 1,
+   "report": 1
+  },
+  {
+   "role": "Gym Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1,
+   "print": 1,
+   "email": 1,
+   "export": 1,
+   "report": 1
+  },
+  {
+   "role": "Gym Staff",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "print": 1,
+   "report": 1
+  },
+  {
+   "role": "Gym Trainer",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "print": 1,
+   "report": 1
+  }
+ ]
+}

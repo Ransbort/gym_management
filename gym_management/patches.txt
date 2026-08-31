@@ -1,0 +1,3 @@
+# version-1.0
+# ------------
+# gym_management.patches.v1_0.some_patch

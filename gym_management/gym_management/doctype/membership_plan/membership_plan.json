@@ -1,0 +1,113 @@
+{
+ "doctype": "DocType",
+ "name": "Membership Plan",
+ "module": "Gym Management",
+ "custom": 0,
+ "istable": 0,
+ "issingle": 0,
+ "is_submittable": 0,
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1,
+ "field_order": [
+  "plan_name",
+  "duration_months",
+  "price",
+  "column_break_1",
+  "class_credits_per_month",
+  "includes_pt_sessions",
+  "access_hours",
+  "section_break_1",
+  "description"
+ ],
+ "fields": [
+  {
+   "fieldname": "plan_name",
+   "fieldtype": "Data",
+   "label": "Plan Name",
+   "reqd": 1,
+   "unique": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "duration_months",
+   "fieldtype": "Int",
+   "label": "Duration Months",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "price",
+   "fieldtype": "Currency",
+   "label": "Price",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "column_break_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "class_credits_per_month",
+   "fieldtype": "Int",
+   "label": "Class Credits Per Month",
+   "description": "Leave 0 for unlimited group-class bookings."
+  },
+  {
+   "fieldname": "includes_pt_sessions",
+   "fieldtype": "Int",
+   "label": "Included PT Sessions / month"
+  },
+  {
+   "fieldname": "access_hours",
+   "fieldtype": "Select",
+   "label": "Access Hours",
+   "options": "Full Access\nOff-Peak Only",
+   "default": "Full Access"
+  },
+  {
+   "fieldname": "section_break_1",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "description",
+   "fieldtype": "Text",
+   "label": "Description"
+  }
+ ],
+ "autoname": "field:plan_name",
+ "naming_rule": "By fieldname",
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1,
+   "print": 1,
+   "email": 1,
+   "export": 1,
+   "share": 1,
+   "report": 1
+  },
+  {
+   "role": "Gym Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1,
+   "print": 1,
+   "email": 1,
+   "export": 1,
+   "report": 1
+  },
+  {
+   "role": "Gym Staff",
+   "read": 1,
+   "print": 1,
+   "report": 1
+  }
+ ]
+}

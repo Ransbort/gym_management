@@ -1,0 +1,56 @@
+{
+ "doctype": "DocType",
+ "name": "Diet Plan Meal",
+ "module": "Gym Management",
+ "custom": 0,
+ "istable": 1,
+ "issingle": 0,
+ "is_submittable": 0,
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 0,
+ "field_order": [
+  "meal_time",
+  "food_items",
+  "quantity",
+  "calories",
+  "notes"
+ ],
+ "fields": [
+  {
+   "fieldname": "meal_time",
+   "fieldtype": "Select",
+   "label": "Meal Time",
+   "options": "Early Morning\nBreakfast\nMid-Morning Snack\nLunch\nEvening Snack\nDinner\nPost-Workout",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "food_items",
+   "fieldtype": "Small Text",
+   "label": "Food Items",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "quantity",
+   "fieldtype": "Data",
+   "label": "Quantity",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "calories",
+   "fieldtype": "Int",
+   "label": "Calories",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "notes",
+   "fieldtype": "Data",
+   "label": "Notes"
+  }
+ ],
+ "permissions": []
+}
