@@ -16,6 +16,7 @@
   "link_customer_to_gym_member",
   "column_break_1",
   "default_cost_center",
+  "default_payment_terms_template",
   "section_break_2",
   "membership_renewal_reminder_to_members",
   "column_break_2",
@@ -81,6 +82,12 @@
    "fieldtype": "Link",
    "label": "Default Cost Center",
    "options": "Cost Center"
+  },
+  {
+   "fieldname": "default_payment_terms_template",
+   "fieldtype": "Link",
+   "label": "Default Payment Terms Template",
+   "options": "Payment Terms Template"
   },
   {
    "fieldname": "section_break_2",

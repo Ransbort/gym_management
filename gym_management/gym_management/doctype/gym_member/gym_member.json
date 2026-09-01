@@ -14,13 +14,13 @@
  "field_order": [
   "naming_series",
   "member_name",
+  "phone",
   "photo",
   "column_break_1",
   "gender",
   "date_of_birth",
   "section_break_1",
   "email",
-  "phone",
   "column_break_2",
   "address",
   "section_break_2",
@@ -47,6 +47,14 @@
    "fieldname": "member_name",
    "fieldtype": "Data",
    "label": "Member Name",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "phone",
+   "fieldtype": "Data",
+   "label": "Mobile Number",
+   "options": "Phone",
    "reqd": 1,
    "in_list_view": 1
   },
@@ -82,13 +90,6 @@
    "fieldtype": "Data",
    "label": "Email",
    "options": "Email",
-   "in_list_view": 1
-  },
-  {
-   "fieldname": "phone",
-   "fieldtype": "Data",
-   "label": "Phone",
-   "options": "Phone",
    "in_list_view": 1
   },
   {
@@ -168,6 +169,28 @@
  ],
  "image_field": "photo",
  "title_field": "member_name",
+ "links": [
+  {
+   "group": "Linked Forms",
+   "link_doctype": "Gym Membership",
+   "link_fieldname": "member"
+  },
+  {
+   "group": "Linked Forms",
+   "link_doctype": "Member Body Measurement",
+   "link_fieldname": "member"
+  },
+  {
+   "group": "Fitness & Nutrition",
+   "link_doctype": "Assigned Workout Plan",
+   "link_fieldname": "member"
+  },
+  {
+   "group": "Fitness & Nutrition",
+   "link_doctype": "Assigned Diet Plan",
+   "link_fieldname": "member"
+  }
+ ],
  "autoname": "naming_series:",
  "naming_rule": "By \"Naming Series\" field",
  "permissions": [

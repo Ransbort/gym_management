@@ -2,7 +2,7 @@
 # For license information, please see license.txt
 
 import frappe
-from frappe.utils import add_months, flt, getdate, nowdate
+from frappe.utils import add_days, add_months, flt, getdate, nowdate
 from frappe.model.document import Document
 
 
@@ -18,8 +18,12 @@ class GymMembership(Document):
 				"qty": 1,
 				"rate": plan.price,
 			})
+		self.apply_admission_fee(settings)
 		if not self.end_date:
-			self.end_date = add_months(self.start_date, plan.duration_months)
+			if self.valid_number_of_days:
+				self.end_date = add_days(self.start_date, self.valid_number_of_days)
+			else:
+				self.end_date = add_months(self.start_date, plan.duration_months)
 		self.calculate_totals()
 		if self.status == "Active" and getdate(self.end_date) < getdate(nowdate()):
 			self.status = "Expired"
@@ -29,6 +33,27 @@ class GymMembership(Document):
 			self.taxes_and_charges = settings.default_sales_taxes_and_charges_template
 		if not self.cost_center:
 			self.cost_center = settings.default_cost_center
+		if not self.payment_terms_template:
+			self.payment_terms_template = settings.default_payment_terms_template
+		if not self.valid_number_of_days:
+			self.valid_number_of_days = settings.default_valid_number_of_days
+
+	def apply_admission_fee(self, settings):
+		"""Adds the Admission Fee Item (Gym Settings) as an Order Line, at the
+		Registration Fee amount, when Is Admission Fee is checked and it isn't
+		already on the order.
+		"""
+		if not self.is_admission_fee or not settings.admission_fee_item:
+			return
+		for item in self.items:
+			if item.item_code == settings.admission_fee_item:
+				return
+		self.append("items", {
+			"item_code": settings.admission_fee_item,
+			"description": "Admission Fee",
+			"qty": 1,
+			"rate": settings.registration_fee,
+		})
 
 	def calculate_totals(self):
 		net_total = 0.0
