@@ -13,35 +13,204 @@
  "track_changes": 0,
  "field_order": [
   "section_break_1",
+  "link_customer_to_gym_member",
+  "column_break_1",
+  "default_cost_center",
+  "section_break_2",
+  "membership_renewal_reminder_to_members",
+  "column_break_2",
+  "enable_tax",
+  "section_break_3",
+  "default_gym_membership_item",
+  "column_break_3",
+  "default_sales_taxes_and_charges_template",
+  "section_break_4",
+  "automate_membership_invoicing",
+  "column_break_4",
+  "collect_fee_for_members_registration",
+  "section_break_5",
+  "link_gym_trainer_to_employee",
+  "column_break_5",
+  "registration_fee",
+  "section_break_6",
+  "default_customer_group",
+  "column_break_6",
+  "default_valid_number_of_days",
+  "section_break_7",
+  "default_price_list",
+  "column_break_7",
+  "admission_fee_item",
+  "section_break_8",
   "gym_name",
   "logo",
-  "column_break_1",
+  "column_break_8",
   "gym_email",
   "gym_phone",
-  "section_break_2",
+  "section_break_9",
   "address",
-  "section_break_3",
-  "default_tax_template",
-  "column_break_2",
-  "default_payment_terms_template",
-  "column_break_3",
-  "default_cost_center",
-  "section_break_4",
-  "membership_expiry_reminder_days",
-  "section_break_5",
+  "section_break_10",
   "bmi_underweight_max",
-  "column_break_4",
+  "column_break_9",
   "bmi_normal_max",
-  "column_break_5",
+  "column_break_10",
   "bmi_overweight_max",
-  "section_break_6",
+  "section_break_11",
   "enable_diet_plans",
-  "column_break_6",
+  "column_break_11",
   "enable_body_measurements"
  ],
  "fields": [
   {
    "fieldname": "section_break_1",
+   "fieldtype": "Section Break",
+   "label": "General Settings"
+  },
+  {
+   "fieldname": "link_customer_to_gym_member",
+   "fieldtype": "Check",
+   "label": "Link Customer to Gym Member",
+   "default": 1,
+   "description": "If checked, a Customer will be created, mapped to Gym Members. Gym Member invoices will be created against this Customer. You can also select an existing Customer while creating a Gym Member."
+  },
+  {
+   "fieldname": "column_break_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "default_cost_center",
+   "fieldtype": "Link",
+   "label": "Default Cost Center",
+   "options": "Cost Center"
+  },
+  {
+   "fieldname": "section_break_2",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "membership_renewal_reminder_to_members",
+   "fieldtype": "Check",
+   "label": "Membership Renewal Reminder To Members"
+  },
+  {
+   "fieldname": "column_break_2",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "enable_tax",
+   "fieldtype": "Check",
+   "label": "Enable Tax",
+   "default": 1
+  },
+  {
+   "fieldname": "section_break_3",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "default_gym_membership_item",
+   "fieldtype": "Link",
+   "label": "Default Gym Membership Item",
+   "options": "Item"
+  },
+  {
+   "fieldname": "column_break_3",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "default_sales_taxes_and_charges_template",
+   "fieldtype": "Link",
+   "label": "Default Sales Taxes and Charges Template",
+   "options": "Sales Taxes and Charges Template",
+   "reqd": 1
+  },
+  {
+   "fieldname": "section_break_4",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "automate_membership_invoicing",
+   "fieldtype": "Check",
+   "label": "Automate Membership Invoicing",
+   "default": 1,
+   "description": "Manage Membership Invoice submit and cancel automatically for Gym Membership"
+  },
+  {
+   "fieldname": "column_break_4",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "collect_fee_for_members_registration",
+   "fieldtype": "Check",
+   "label": "Collect Fee for Members Registration",
+   "default": 1,
+   "description": "Checking this will create new Members"
+  },
+  {
+   "fieldname": "section_break_5",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "link_gym_trainer_to_employee",
+   "fieldtype": "Check",
+   "label": "Link Gym Trainer to Employee",
+   "default": 1,
+   "description": "If checked, an Employee will be created, mapped to Gym Trainer. Gym Trainer Salary will be created against this Employee. You can also select an existing Employee while creating Gym Trainer."
+  },
+  {
+   "fieldname": "column_break_5",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "registration_fee",
+   "fieldtype": "Currency",
+   "label": "Registration Fee",
+   "reqd": 1
+  },
+  {
+   "fieldname": "section_break_6",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "default_customer_group",
+   "fieldtype": "Link",
+   "label": "Default Customer Group",
+   "options": "Customer Group",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_6",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "default_valid_number_of_days",
+   "fieldtype": "Int",
+   "label": "Default Valid Number of Days",
+   "reqd": 1,
+   "description": "Default Gym admission expire day."
+  },
+  {
+   "fieldname": "section_break_7",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "default_price_list",
+   "fieldtype": "Link",
+   "label": "Default Price List",
+   "options": "Price List",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_7",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "admission_fee_item",
+   "fieldtype": "Link",
+   "label": "Admission Fee Item",
+   "options": "Item",
+   "reqd": 1
+  },
+  {
+   "fieldname": "section_break_8",
    "fieldtype": "Section Break",
    "label": "Gym Details"
   },
@@ -57,7 +226,7 @@
    "label": "Logo"
   },
   {
-   "fieldname": "column_break_1",
+   "fieldname": "column_break_8",
    "fieldtype": "Column Break"
   },
   {
@@ -73,7 +242,7 @@
    "options": "Phone"
   },
   {
-   "fieldname": "section_break_2",
+   "fieldname": "section_break_9",
    "fieldtype": "Section Break",
    "label": "Address"
   },
@@ -83,48 +252,7 @@
    "label": "Address"
   },
   {
-   "fieldname": "section_break_3",
-   "fieldtype": "Section Break",
-   "label": "Membership Defaults"
-  },
-  {
-   "fieldname": "default_tax_template",
-   "fieldtype": "Link",
-   "label": "Default Tax Template",
-   "options": "Gym Tax Template"
-  },
-  {
-   "fieldname": "column_break_2",
-   "fieldtype": "Column Break"
-  },
-  {
-   "fieldname": "default_payment_terms_template",
-   "fieldtype": "Link",
-   "label": "Default Payment Terms Template",
-   "options": "Gym Payment Terms Template"
-  },
-  {
-   "fieldname": "column_break_3",
-   "fieldtype": "Column Break"
-  },
-  {
-   "fieldname": "default_cost_center",
-   "fieldtype": "Link",
-   "label": "Default Cost Center",
-   "options": "Gym Cost Center"
-  },
-  {
-   "fieldname": "section_break_4",
-   "fieldtype": "Section Break"
-  },
-  {
-   "fieldname": "membership_expiry_reminder_days",
-   "fieldtype": "Int",
-   "label": "Expiry Reminder (days before)",
-   "default": 7
-  },
-  {
-   "fieldname": "section_break_5",
+   "fieldname": "section_break_10",
    "fieldtype": "Section Break",
    "label": "Body Measurement Ranges (BMI)"
   },
@@ -135,7 +263,7 @@
    "default": 18.5
   },
   {
-   "fieldname": "column_break_4",
+   "fieldname": "column_break_9",
    "fieldtype": "Column Break"
   },
   {
@@ -145,7 +273,7 @@
    "default": 24.9
   },
   {
-   "fieldname": "column_break_5",
+   "fieldname": "column_break_10",
    "fieldtype": "Column Break"
   },
   {
@@ -155,7 +283,7 @@
    "default": 29.9
   },
   {
-   "fieldname": "section_break_6",
+   "fieldname": "section_break_11",
    "fieldtype": "Section Break",
    "label": "Feature Toggles"
   },
@@ -166,7 +294,7 @@
    "default": 1
   },
   {
-   "fieldname": "column_break_6",
+   "fieldname": "column_break_11",
    "fieldtype": "Column Break"
   },
   {

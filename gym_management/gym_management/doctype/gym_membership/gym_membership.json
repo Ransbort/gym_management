@@ -22,7 +22,7 @@
   "section_break_1",
   "items",
   "section_break_2",
-  "tax_template",
+  "taxes_and_charges",
   "column_break_2",
   "net_total",
   "column_break_3",
@@ -112,10 +112,10 @@
    "label": "Taxes & Totals"
   },
   {
-   "fieldname": "tax_template",
+   "fieldname": "taxes_and_charges",
    "fieldtype": "Link",
-   "label": "Tax Template",
-   "options": "Gym Tax Template"
+   "label": "Sales Taxes and Charges Template",
+   "options": "Sales Taxes and Charges Template"
   },
   {
    "fieldname": "column_break_2",
@@ -154,7 +154,7 @@
    "fieldname": "payment_terms_template",
    "fieldtype": "Link",
    "label": "Payment Terms Template",
-   "options": "Gym Payment Terms Template"
+   "options": "Payment Terms Template"
   },
   {
    "fieldname": "column_break_4",
@@ -164,7 +164,7 @@
    "fieldname": "cost_center",
    "fieldtype": "Link",
    "label": "Cost Center",
-   "options": "Gym Cost Center"
+   "options": "Cost Center"
   },
   {
    "fieldname": "section_break_4",

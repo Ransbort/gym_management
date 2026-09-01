@@ -1,11 +1,11 @@
 app_name = "gym_management"
 app_title = "Gym Management"
 app_publisher = "Ransford Borketey"
-app_description = "Standalone gym management: members, memberships, attendance, trainers, classes, PT packages, workout plans, lockers and equipment"
+app_description = "Gym management on ERPNext: members, memberships, attendance, trainers, classes, PT packages, workout plans, lockers and equipment"
 app_email = "ransbort@outlook.com"
 app_license = "mit"
-required_apps = []
-app_home = "/app/gym-management"
+required_apps = ["erpnext"]
+app_home = "/desk/gym-management"
 
 add_to_apps_screen = [
 	{
@@ -13,7 +13,7 @@ add_to_apps_screen = [
 		"logo": "/assets/gym_management/images/gym_management.svg",
 		"title": app_title,
 		"route": app_home,
-		"has_permission": "gym_management.gym_management.install.check_app_permission",
+		"has_permission": "gym_management.install.check_app_permission",
 	}
 ]
 
@@ -25,12 +25,13 @@ add_to_apps_screen = [
 # Installation
 # ------------
 after_install = "gym_management.install.after_install"
+after_migrate = "gym_management.install.after_migrate"
 
 # Scheduled Tasks
 # ---------------
 scheduler_events = {
 	"daily": [
-		"gym_management.gym_management.utils.tasks.expire_memberships",
-		"gym_management.gym_management.utils.tasks.expire_pt_packages",
+		"gym_management.utils.tasks.expire_memberships",
+		"gym_management.utils.tasks.expire_pt_packages",
 	],
 }

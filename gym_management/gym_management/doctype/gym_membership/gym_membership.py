@@ -9,11 +9,12 @@ from frappe.model.document import Document
 class GymMembership(Document):
 	def validate(self):
 		plan = frappe.get_cached_doc("Membership Plan", self.membership_plan)
-		self.apply_settings_defaults()
+		settings = frappe.get_cached_doc("Gym Settings")
+		self.apply_settings_defaults(settings)
 		if not self.items:
 			self.append("items", {
-				"item_name": plan.plan_name,
-				"description": "Membership Plan ({0} month(s))".format(plan.duration_months),
+				"item_code": settings.default_gym_membership_item,
+				"description": "Membership Plan: {0} ({1} month(s))".format(plan.plan_name, plan.duration_months),
 				"qty": 1,
 				"rate": plan.price,
 			})
@@ -23,13 +24,11 @@ class GymMembership(Document):
 		if self.status == "Active" and getdate(self.end_date) < getdate(nowdate()):
 			self.status = "Expired"
 
-	def apply_settings_defaults(self):
-		if self.tax_template or self.payment_terms_template or self.cost_center:
-			return
-		settings = frappe.get_cached_doc("Gym Settings")
-		self.tax_template = self.tax_template or settings.default_tax_template
-		self.payment_terms_template = self.payment_terms_template or settings.default_payment_terms_template
-		self.cost_center = self.cost_center or settings.default_cost_center
+	def apply_settings_defaults(self, settings):
+		if not self.taxes_and_charges and settings.enable_tax:
+			self.taxes_and_charges = settings.default_sales_taxes_and_charges_template
+		if not self.cost_center:
+			self.cost_center = settings.default_cost_center
 
 	def calculate_totals(self):
 		net_total = 0.0
@@ -37,7 +36,17 @@ class GymMembership(Document):
 			item.amount = flt(item.qty) * flt(item.rate)
 			net_total += item.amount
 		self.net_total = net_total
-		tax_rate = frappe.db.get_value("Gym Tax Template", self.tax_template, "tax_rate") if self.tax_template else 0
+		tax_rate = 0
+		if self.taxes_and_charges:
+			tax_rows = frappe.get_all(
+				"Sales Taxes and Charges",
+				filters={"parent": self.taxes_and_charges, "parenttype": "Sales Taxes and Charges Template"},
+				fields=["rate"],
+			)
+			# Approximation: sums percentage rows as if all are "On Net Total" -
+			# covers the common single/flat-rate templates (e.g. GST) but not
+			# cascading/compound tax charge types.
+			tax_rate = sum(flt(row.rate) for row in tax_rows)
 		self.tax_amount = flt(net_total) * flt(tax_rate) / 100
 		self.grand_total = flt(self.net_total) + flt(self.tax_amount)
 		self.outstanding_amount = flt(self.grand_total) - flt(self.paid_amount)

@@ -1,0 +1,20 @@
+{
+ "app": "gym_management",
+ "creation": "2026-07-22 00:00:00",
+ "docstatus": 0,
+ "doctype": "Desktop Icon",
+ "hidden": 0,
+ "icon_type": "App",
+ "idx": 16,
+ "label": "Gym Management",
+ "link": "/desk/gym-management",
+ "link_type": "External",
+ "logo_url": "/assets/gym_management/images/gym_management.svg",
+ "modified": "2026-07-22 00:00:00",
+ "modified_by": "Administrator",
+ "name": "Gym Management",
+ "owner": "Administrator",
+ "restrict_removal": 0,
+ "roles": [],
+ "standard": 1
+}

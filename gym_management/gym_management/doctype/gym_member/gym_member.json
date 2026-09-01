@@ -31,7 +31,9 @@
   "date_joined",
   "membership_status",
   "column_break_4",
-  "health_notes"
+  "health_notes",
+  "section_break_4",
+  "customer"
  ],
  "fields": [
   {
@@ -51,7 +53,9 @@
   {
    "fieldname": "photo",
    "fieldtype": "Attach Image",
-   "label": "Photo"
+   "label": "Photo",
+   "hidden": 1,
+   "description": "Set from the sidebar avatar (click it to upload) - kept as a real field only because image_field points at it."
   },
   {
    "fieldname": "column_break_1",
@@ -148,8 +152,22 @@
    "fieldtype": "Small Text",
    "label": "Health Notes",
    "description": "Optional, self-reported: injuries, conditions or restrictions relevant to training."
+  },
+  {
+   "fieldname": "section_break_4",
+   "fieldtype": "Section Break",
+   "label": "Accounting"
+  },
+  {
+   "fieldname": "customer",
+   "fieldtype": "Link",
+   "label": "Customer",
+   "options": "Customer",
+   "description": "Auto-created when Gym Settings > Link Customer to Gym Member is checked; select an existing Customer here to skip that."
   }
  ],
+ "image_field": "photo",
+ "title_field": "member_name",
  "autoname": "naming_series:",
  "naming_rule": "By \"Naming Series\" field",
  "permissions": [
