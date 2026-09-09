@@ -63,19 +63,6 @@
   },
   {
    "doctype": "Workspace Sidebar Item",
-   "idx": 5,
-   "type": "Link",
-   "icon": "notify",
-   "label": "Trainer Portal",
-   "link_to": "trainer",
-   "link_type": "Page",
-   "child": 0,
-   "parent": "Gym Management",
-   "parentfield": "items",
-   "parenttype": "Workspace Sidebar"
-  },
-  {
-   "doctype": "Workspace Sidebar Item",
    "idx": 6,
    "type": "Section Break",
    "icon": "star",
