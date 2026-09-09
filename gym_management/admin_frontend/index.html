@@ -1,0 +1,29 @@
+<!doctype html>
+<!--
+  Dev-only stub (`npm run dev`). Production is served by
+  ../www/gym-admin/index.html - a hand-authored Jinja template, not this
+  file - see that file's own comments for why. `window.adminBoot` is
+  normally injected by that Jinja template server-side; this fallback lets
+  `npm run dev` render something reasonable against a real bench via the
+  proxy in vite.config.js.
+-->
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Gym Admin</title>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script>
+      window.adminBoot = window.adminBoot || {
+        is_guest: true,
+        user: 'Guest',
+        full_name: '',
+        is_staff: false,
+        site_name: window.location.hostname,
+      };
+    </script>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

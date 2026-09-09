@@ -33,8 +33,6 @@ class GymMembership(Document):
 			self.taxes_and_charges = settings.default_sales_taxes_and_charges_template
 		if not self.cost_center:
 			self.cost_center = settings.default_cost_center
-		if not self.payment_terms_template:
-			self.payment_terms_template = settings.default_payment_terms_template
 		if not self.valid_number_of_days:
 			self.valid_number_of_days = settings.default_valid_number_of_days
 

@@ -1,0 +1,27 @@
+{% extends "templates/web.html" %}
+
+{% block page_content %}
+<div class="gym-portal-landing" style="max-width: 640px; margin: 0 auto;">
+	<h1>{{ _("Gym Portal") }}</h1>
+
+	{% if not member and not trainer %}
+	<p class="text-muted">
+		{{ _("Your account isn't linked to a Gym Member or Trainer profile yet. Ask gym staff to link your login to get access.") }}
+	</p>
+	{% else %}
+	<p class="text-muted">{{ _("Welcome back.") }}</p>
+	<div style="display: flex; gap: 12px; flex-wrap: wrap; margin-top: 20px;">
+		{% if member %}
+		<a class="btn btn-primary" href="/gym-portal/member">
+			{{ _("My Membership") }}{% if member.member_name %} - {{ member.member_name }}{% endif %}
+		</a>
+		{% endif %}
+		{% if trainer %}
+		<a class="btn btn-default" href="/gym-portal/trainer">
+			{{ _("Trainer Dashboard") }}{% if trainer.trainer_name %} - {{ trainer.trainer_name }}{% endif %}
+		</a>
+		{% endif %}
+	</div>
+	{% endif %}
+</div>
+{% endblock %}

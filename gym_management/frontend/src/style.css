@@ -1,0 +1,29 @@
+/* Theme (design tokens) + utilities only - deliberately NOT importing
+   Tailwind's Preflight (see sports_complex/frontend/src/style.css for the
+   fuller rationale: this page still loads the site's own Bootstrap
+   stylesheet via templates/web.html, and Preflight's element-level reset
+   would fight that rather than layer cleanly on top of it). */
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css" layer(utilities);
+
+/* Same Cascade Layers fix as sports_complex's own style.css: the site's
+   Bootstrap-based theme ships a plain, unlayered `button { border-radius:
+   0px; }` reset that otherwise wins over any layered rounded-* utility
+   on a <button>, regardless of selector specificity. */
+button.rounded-md { border-radius: var(--radius-md); }
+button.rounded-lg { border-radius: var(--radius-lg); }
+button.rounded-xl { border-radius: var(--radius-xl); }
+button.rounded-2xl { border-radius: var(--radius-2xl); }
+button.rounded-full { border-radius: 9999px; }
+
+body {
+  background-color: #f8fafc;
+}
+
+#app, #app *, #app *::before, #app *::after {
+  box-sizing: border-box;
+}
+
+#app {
+  overflow-x: hidden;
+}

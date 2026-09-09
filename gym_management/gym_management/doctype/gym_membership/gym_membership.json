@@ -15,10 +15,10 @@
   "naming_series",
   "member",
   "member_name",
+  "customer",
   "column_break_1",
   "company",
   "date",
-  "payment_terms_template",
   "section_break_1",
   "is_admission_fee",
   "membership_plan",
@@ -50,7 +50,8 @@
   "outstanding_amount",
   "payment_status",
   "section_break_6",
-  "invoice_reference"
+  "invoice_reference",
+  "conversion_rate"
  ],
  "fields": [
   {
@@ -77,6 +78,17 @@
    "read_only": 1
   },
   {
+   "fieldname": "customer",
+   "fieldtype": "Link",
+   "label": "Customer",
+   "options": "Customer",
+   "hidden": 1,
+   "print_hide": 1,
+   "fetch_from": "member.customer",
+   "read_only": 1,
+   "description": "Mirrors the member's own Customer (Gym Member > Accounting), if one is linked. Kept in sync explicitly by create_membership() and the backfill repair, same as member_name above (fetch_from is Desk-JS only). Needed for frappe_paystack's PaystackPaymentLog.get_data(), which reads <linked doc>.customer to resolve a receipt email - without this field that access raises AttributeError, since Gym Membership otherwise has no customer attribute at all."
+  },
+  {
    "fieldname": "column_break_1",
    "fieldtype": "Column Break"
   },
@@ -94,13 +106,6 @@
    "default": "Today",
    "reqd": 1,
    "description": "Document date."
-  },
-  {
-   "fieldname": "payment_terms_template",
-   "fieldtype": "Link",
-   "label": "Payment Terms",
-   "options": "Payment Terms Template",
-   "reqd": 1
   },
   {
    "fieldname": "section_break_1",
@@ -123,14 +128,16 @@
   },
   {
    "fieldname": "membership_plan_type",
-   "fieldtype": "Data",
+   "fieldtype": "Link",
    "label": "Membership Plan Type",
+   "options": "Membership Plan Type",
    "reqd": 1
   },
   {
    "fieldname": "gym_services",
-   "fieldtype": "Data",
-   "label": "Gym Services"
+   "fieldtype": "Table MultiSelect",
+   "label": "Gym Services",
+   "options": "Gym Membership Service"
   },
   {
    "fieldname": "trainer",
@@ -293,6 +300,15 @@
    "fieldtype": "Data",
    "label": "Invoice Reference",
    "description": "Optional free-text reference to an external invoice/receipt."
+  },
+  {
+   "fieldname": "conversion_rate",
+   "fieldtype": "Float",
+   "label": "Conversion Rate",
+   "default": 1,
+   "hidden": 1,
+   "print_hide": 1,
+   "description": "Currency conversion rate against the company currency. Always 1 here (Gym Membership is single-currency); this field exists only because frappe_paystack's PaystackPaymentLog.get_data() multiplies amount by <linked doc>.conversion_rate when building the checkout page, and errors out (float * None) if the field is missing."
   }
  ],
  "autoname": "naming_series:",

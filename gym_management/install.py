@@ -8,6 +8,9 @@ import frappe
 
 ROLES = ["Gym Manager", "Gym Staff", "Gym Trainer"]
 
+# Portal (website-side, no Desk access) roles for Gym Portal self-service.
+PORTAL_ROLES = ["Gym Portal Member", "Gym Portal Trainer"]
+
 
 def after_install():
 	create_roles()
@@ -16,6 +19,7 @@ def after_install():
 
 
 def after_migrate():
+	create_roles()
 	sync_workspace_sidebars()
 	remove_retired_erpnext_stand_in_doctypes()
 	ensure_dashboard_widgets()
@@ -28,6 +32,14 @@ def create_roles():
 		role = frappe.new_doc("Role")
 		role.role_name = role_name
 		role.desk_access = 1
+		role.flags.ignore_permissions = True
+		role.insert(ignore_permissions=True)
+	for role_name in PORTAL_ROLES:
+		if frappe.db.exists("Role", role_name):
+			continue
+		role = frappe.new_doc("Role")
+		role.role_name = role_name
+		role.desk_access = 0
 		role.flags.ignore_permissions = True
 		role.insert(ignore_permissions=True)
 
@@ -117,7 +129,7 @@ def remove_retired_erpnext_stand_in_doctypes():
 	for doctype in RETIRED_ERPNEXT_STAND_IN_DOCTYPES:
 		if frappe.db.exists("DocType", doctype):
 			frappe.delete_doc("DocType", doctype, force=True, ignore_permissions=True)
-		print(f"[INFO] Removed retired doctype {doctype}")
+			print(f"[INFO] Removed retired doctype {doctype}")
 
 
 def ensure_dashboard_widgets():

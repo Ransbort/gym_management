@@ -1,0 +1,28 @@
+{
+ "doctype": "DocType",
+ "name": "Gym Membership Service",
+ "module": "Gym Management",
+ "custom": 0,
+ "istable": 1,
+ "issingle": 0,
+ "is_submittable": 0,
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 0,
+ "field_order": [
+  "gym_service"
+ ],
+ "fields": [
+  {
+   "fieldname": "gym_service",
+   "fieldtype": "Link",
+   "label": "Gym Service",
+   "options": "Gym Service",
+   "reqd": 1,
+   "in_list_view": 1
+  }
+ ],
+ "permissions": []
+}

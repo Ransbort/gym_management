@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Gym Portal (dev)</title>
+    <script type="module" crossorigin src="/assets/gym_management/portal/assets/main.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/gym_management/portal/assets/main.css">
+  </head>
+  <body>
+    <div id="app"></div>
+    <script>
+      // `vite dev` renders this file directly, outside Frappe entirely, so
+      // there's no server-rendered window.portalBoot to read (see
+      // www/gym-portal/index.html for the real one). This stand-in just
+      // lets the app boot for local UI work; point apiBase at a running
+      // site to talk to a real backend.
+      window.portalBoot = window.portalBoot || {
+        is_guest: true,
+        user: 'Guest',
+        full_name: '',
+        is_member: false,
+        member_name: null,
+        is_trainer: false,
+        trainer_name: null,
+      };
+    </script>
+  </body>
+</html>

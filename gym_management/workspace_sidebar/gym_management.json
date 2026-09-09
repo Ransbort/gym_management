@@ -64,6 +64,19 @@
   {
    "doctype": "Workspace Sidebar Item",
    "idx": 5,
+   "type": "Link",
+   "icon": "notify",
+   "label": "Trainer Portal",
+   "link_to": "trainer",
+   "link_type": "Page",
+   "child": 0,
+   "parent": "Gym Management",
+   "parentfield": "items",
+   "parenttype": "Workspace Sidebar"
+  },
+  {
+   "doctype": "Workspace Sidebar Item",
+   "idx": 6,
    "type": "Section Break",
    "icon": "star",
    "label": "Membership",
@@ -77,7 +90,7 @@
   },
   {
    "doctype": "Workspace Sidebar Item",
-   "idx": 6,
+   "idx": 7,
    "type": "Link",
    "icon": "tag",
    "label": "Membership Plan",
@@ -90,7 +103,7 @@
   },
   {
    "doctype": "Workspace Sidebar Item",
-   "idx": 7,
+   "idx": 8,
    "type": "Link",
    "icon": "refresh",
    "label": "Membership Renewal",
@@ -103,7 +116,7 @@
   },
   {
    "doctype": "Workspace Sidebar Item",
-   "idx": 8,
+   "idx": 9,
    "type": "Section Break",
    "icon": "education",
    "label": "Trainers & Classes",
@@ -117,7 +130,7 @@
   },
   {
    "doctype": "Workspace Sidebar Item",
-   "idx": 9,
+   "idx": 10,
    "type": "Link",
    "icon": "hr",
    "label": "Trainer",
@@ -130,7 +143,7 @@
   },
   {
    "doctype": "Workspace Sidebar Item",
-   "idx": 10,
+   "idx": 11,
    "type": "Link",
    "icon": "filter",
    "label": "Class Type",
@@ -143,7 +156,7 @@
   },
   {
    "doctype": "Workspace Sidebar Item",
-   "idx": 11,
+   "idx": 12,
    "type": "Link",
    "icon": "calendar",
    "label": "Class Schedule",
@@ -156,7 +169,7 @@
   },
   {
    "doctype": "Workspace Sidebar Item",
-   "idx": 12,
+   "idx": 13,
    "type": "Link",
    "icon": "assign",
    "label": "Class Booking",
@@ -169,7 +182,7 @@
   },
   {
    "doctype": "Workspace Sidebar Item",
-   "idx": 13,
+   "idx": 14,
    "type": "Section Break",
    "icon": "quality-3",
    "label": "Personal Training",
@@ -183,7 +196,7 @@
   },
   {
    "doctype": "Workspace Sidebar Item",
-   "idx": 14,
+   "idx": 15,
    "type": "Link",
    "icon": "assets",
    "label": "PT Package",
@@ -196,7 +209,7 @@
   },
   {
    "doctype": "Workspace Sidebar Item",
-   "idx": 15,
+   "idx": 16,
    "type": "Link",
    "icon": "buying",
    "label": "PT Package Purchase",
@@ -209,7 +222,7 @@
   },
   {
    "doctype": "Workspace Sidebar Item",
-   "idx": 16,
+   "idx": 17,
    "type": "Link",
    "icon": "milestone",
    "label": "PT Session",
@@ -222,7 +235,7 @@
   },
   {
    "doctype": "Workspace Sidebar Item",
-   "idx": 17,
+   "idx": 18,
    "type": "Section Break",
    "icon": "heart",
    "label": "Body, Workouts & Nutrition",
@@ -236,7 +249,7 @@
   },
   {
    "doctype": "Workspace Sidebar Item",
-   "idx": 18,
+   "idx": 19,
    "type": "Link",
    "icon": "scan",
    "label": "Member Body Measurement",
@@ -249,7 +262,7 @@
   },
   {
    "doctype": "Workspace Sidebar Item",
-   "idx": 19,
+   "idx": 20,
    "type": "Link",
    "icon": "up-line",
    "label": "Exercise",
@@ -262,7 +275,7 @@
   },
   {
    "doctype": "Workspace Sidebar Item",
-   "idx": 20,
+   "idx": 21,
    "type": "Link",
    "icon": "project",
    "label": "Workout Plan",
@@ -275,7 +288,7 @@
   },
   {
    "doctype": "Workspace Sidebar Item",
-   "idx": 21,
+   "idx": 22,
    "type": "Link",
    "icon": "project-1",
    "label": "Assigned Workout Plan",
@@ -288,7 +301,7 @@
   },
   {
    "doctype": "Workspace Sidebar Item",
-   "idx": 22,
+   "idx": 23,
    "type": "Link",
    "icon": "project-2",
    "label": "Diet Plan",
@@ -301,7 +314,7 @@
   },
   {
    "doctype": "Workspace Sidebar Item",
-   "idx": 23,
+   "idx": 24,
    "type": "Link",
    "icon": "healthcare",
    "label": "Assigned Diet Plan",
@@ -314,7 +327,7 @@
   },
   {
    "doctype": "Workspace Sidebar Item",
-   "idx": 24,
+   "idx": 25,
    "type": "Section Break",
    "icon": "stock",
    "label": "Lockers & Equipment",
@@ -328,7 +341,7 @@
   },
   {
    "doctype": "Workspace Sidebar Item",
-   "idx": 25,
+   "idx": 26,
    "type": "Link",
    "icon": "lock",
    "label": "Locker",
@@ -341,7 +354,7 @@
   },
   {
    "doctype": "Workspace Sidebar Item",
-   "idx": 26,
+   "idx": 27,
    "type": "Link",
    "icon": "loan",
    "label": "Locker Rental",
@@ -354,7 +367,7 @@
   },
   {
    "doctype": "Workspace Sidebar Item",
-   "idx": 27,
+   "idx": 28,
    "type": "Link",
    "icon": "tool",
    "label": "Gym Equipment",
@@ -367,7 +380,7 @@
   },
   {
    "doctype": "Workspace Sidebar Item",
-   "idx": 28,
+   "idx": 29,
    "type": "Link",
    "icon": "setting-gear",
    "label": "Equipment Maintenance Log",
@@ -380,7 +393,7 @@
   },
   {
    "doctype": "Workspace Sidebar Item",
-   "idx": 29,
+   "idx": 30,
    "type": "Link",
    "icon": "setting",
    "label": "Setup",

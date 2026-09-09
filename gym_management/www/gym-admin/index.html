@@ -1,0 +1,133 @@
+{% extends "templates/web.html" %}
+{# context.title is set server-side in index.py from Gym Settings.gym_name
+   (falls back to "Gym Admin" when it's blank or not yet configured), so the
+   browser tab shows the actual gym's name instead of the app's generic
+   name. #}
+{% block title %}{{ title }}{% endblock %}
+
+{# Same navbar/footer suppression pattern as www/gym-portal/index.html and
+   sports_complex's www/portal/index.html - the Vue app renders its own
+   fullscreen shell instead of the site theme's chrome. #}
+{% block navbar %}{% endblock %}
+{% block footer %}{% endblock %}
+
+{% block head_include %}
+<link rel="manifest" href="/assets/gym_management/admin/manifest.webmanifest">
+<meta name="theme-color" content="#4f46e5">
+{# Same idea as the title above: the actual gym logo as the tab favicon
+   once one's uploaded, falling back to this app's own generic icon before
+   that (e.g. a brand new site, or Gym Settings not filled in yet). The
+   PWA manifest's own icon set (used for "install as app"/home-screen,
+   generated at build time - see vite.config.js) is left as the static
+   built icon; templating that one too would need a dynamic manifest
+   endpoint, which is more than this tab-favicon request asked for. #}
+{% if gym_logo %}
+<link rel="icon" href="{{ gym_logo }}">
+<link rel="apple-touch-icon" href="{{ gym_logo }}">
+{% else %}
+<link rel="icon" type="image/svg+xml" href="/assets/gym_management/admin/icon.svg">
+<link rel="apple-touch-icon" href="/assets/gym_management/admin/icon.svg">
+{% endif %}
+{% endblock %}
+
+{% block page_content %}
+<link rel="stylesheet" href="/assets/gym_management/admin/assets/main.css">
+<style>
+  @import url("https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css");
+  {# No custom theme variables here - every color in admin_frontend is a
+     plain Tailwind utility class (indigo-600/700, gray-900, slate-*), so
+     there's nothing for this shell to define or hand down. This #f8fafc
+     is just Tailwind's slate-50 value, used as the pre-mount page
+     background before Vue takes over. #}
+  html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    overflow: hidden;
+    background: #f8fafc;
+  }
+  #app {
+    height: 100vh;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+</style>
+<div id="app"></div>
+{% endblock %}
+
+{% block script %}
+<script>
+  window.adminBoot = {{ admin_boot_json | safe }};
+</script>
+<script>
+  // Same defensive site-chrome cleanup as www/gym-portal/index.html - see
+  // that file's own comments for the full rationale.
+  (function () {
+    function mainContentRoot() {
+      return document.querySelector("#app");
+    }
+    function containsMainContent(el) {
+      var root = mainContentRoot();
+      return !!(root && el && el.contains(root));
+    }
+    function stretchAppToFullWidth() {
+      var el = mainContentRoot();
+      if (!el) return;
+      el = el.parentElement;
+      while (el && el !== document.body && el.nodeType === 1) {
+        el.style.maxWidth = "none";
+        el.style.width = "100%";
+        el.style.marginLeft = "0";
+        el.style.marginRight = "0";
+        el.style.paddingLeft = "0";
+        el.style.paddingRight = "0";
+        el = el.parentElement;
+      }
+    }
+    function hideSiteNav() {
+      var anchors = document.querySelectorAll("a[href]");
+      for (var i = 0; i < anchors.length; i++) {
+        var path;
+        try {
+          path = new URL(anchors[i].getAttribute("href"), window.location.origin).pathname;
+        } catch (e) {
+          continue;
+        }
+        if (path === "/login") {
+          var bar = anchors[i].closest("nav") || anchors[i].closest("header") || anchors[i].closest(".navbar");
+          if (bar && !containsMainContent(bar)) {
+            bar.style.display = "none";
+          }
+          break;
+        }
+      }
+    }
+    function hidePoweredByFooter() {
+      var nodes = document.querySelectorAll("body *");
+      for (var i = 0; i < nodes.length; i++) {
+        var el = nodes[i];
+        if (el.children.length === 0 && /powered by/i.test(el.textContent || "")) {
+          var target = el.closest("footer") || el.closest(".web-footer") || el.parentElement || el;
+          if (target && !containsMainContent(target)) {
+            target.style.display = "none";
+          }
+        }
+      }
+    }
+    function run() {
+      try { hideSiteNav(); } catch (e) {}
+      try { hidePoweredByFooter(); } catch (e) {}
+      try { stretchAppToFullWidth(); } catch (e) {}
+    }
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", run);
+    } else {
+      run();
+    }
+    setTimeout(run, 800);
+  })();
+</script>
+<!-- Vite build output (fixed filenames - see admin_frontend/vite.config.js). -->
+<script type="module" src="/assets/gym_management/admin/assets/main.js"></script>
+{% endblock %}

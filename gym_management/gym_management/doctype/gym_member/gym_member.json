@@ -33,7 +33,9 @@
   "column_break_4",
   "health_notes",
   "section_break_4",
-  "customer"
+  "customer",
+  "section_break_5",
+  "user"
  ],
  "fields": [
   {
@@ -165,6 +167,18 @@
    "label": "Customer",
    "options": "Customer",
    "description": "Auto-created when Gym Settings > Link Customer to Gym Member is checked; select an existing Customer here to skip that."
+  },
+  {
+   "fieldname": "section_break_5",
+   "fieldtype": "Section Break",
+   "label": "Portal Access"
+  },
+  {
+   "fieldname": "user",
+   "fieldtype": "Link",
+   "label": "User",
+   "options": "User",
+   "description": "Optional: link to a login for this member. Grant them the 'Gym Portal Member' role so they can sign in and use the Gym Portal."
   }
  ],
  "image_field": "photo",

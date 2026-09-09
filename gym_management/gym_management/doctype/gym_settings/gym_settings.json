@@ -44,6 +44,7 @@
   "section_break_8",
   "gym_name",
   "logo",
+  "theme_color",
   "column_break_8",
   "gym_email",
   "gym_phone",
@@ -58,7 +59,15 @@
   "section_break_11",
   "enable_diet_plans",
   "column_break_11",
-  "enable_body_measurements"
+  "enable_body_measurements",
+  "section_break_12",
+  "enable_paystack_payments",
+  "column_break_12",
+  "default_payment_gateway",
+  "section_break_13",
+  "enable_session_lock",
+  "column_break_13",
+  "session_lock_timeout"
  ],
  "fields": [
   {
@@ -233,6 +242,13 @@
    "label": "Logo"
   },
   {
+   "fieldname": "theme_color",
+   "fieldtype": "Color",
+   "label": "Theme Color",
+   "default": "#4f46e5",
+   "description": "Accent color for the Gym Admin dashboard (header highlights, buttons, links)."
+  },
+  {
    "fieldname": "column_break_8",
    "fieldtype": "Column Break"
   },
@@ -309,6 +325,52 @@
    "fieldtype": "Check",
    "label": "Enable Body Measurements",
    "default": 1
+  },
+  {
+   "fieldname": "section_break_12",
+   "fieldtype": "Section Break",
+   "label": "Payments"
+  },
+  {
+   "fieldname": "enable_paystack_payments",
+   "fieldtype": "Check",
+   "label": "Enable Paystack Payments",
+   "default": 0,
+   "description": "Master switch for Memberships > Send Payment Link in the Gym Admin dashboard. Off by default even if Paystack is installed. Also requires a matching, enabled Paystack Gateway Setting record (from the separately installed frappe_paystack app) for the membership's Company - this switch only controls whether the dashboard will try, not whether Paystack itself is configured correctly."
+  },
+  {
+   "fieldname": "column_break_12",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "default_payment_gateway",
+   "fieldtype": "Link",
+   "label": "Default Payment Gateway",
+   "options": "Payment Gateway",
+   "description": "e.g. your Paystack Gateway Setting record. Informational only, same as sports_complex's own field of the same name (neither app reads it back in code) - the actual gateway lookup at payment time is frappe_paystack's own Paystack Gateway Setting, matched by Company."
+  },
+  {
+   "fieldname": "section_break_13",
+   "fieldtype": "Section Break",
+   "label": "Security"
+  },
+  {
+   "fieldname": "enable_session_lock",
+   "fieldtype": "Check",
+   "label": "Enable Session Lock",
+   "default": 0,
+   "description": "Lock the Gym Admin screen after a period of inactivity or when the browser tab loses focus."
+  },
+  {
+   "fieldname": "column_break_13",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "session_lock_timeout",
+   "fieldtype": "Int",
+   "label": "Session Lock Timeout (minutes)",
+   "default": 5,
+   "depends_on": "eval:doc.enable_session_lock"
   }
  ],
  "permissions": [
