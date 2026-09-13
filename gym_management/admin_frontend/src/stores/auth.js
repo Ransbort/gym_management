@@ -15,6 +15,7 @@ export const useAuthStore = defineStore('auth', {
       fullName: boot.full_name || '',
       userImage: boot.user_image || '',
       isStaff: !!boot.is_staff,
+      isManager: !!boot.is_manager,
       siteName: boot.site_name || window.location.hostname,
       gymName: boot.gym_name || '',
       gymLogo: boot.gym_logo || '',

@@ -25,11 +25,19 @@ def get_context(context):
 	full_name = None
 	user_image = None
 	is_staff = False
+	is_manager = False
 	if not is_guest:
 		full_name, user_image = frappe.db.get_value("User", frappe.session.user, ["full_name", "user_image"])
 		if user_image:
 			user_image = get_url(quote(user_image, safe="/"))
 		is_staff = bool({"System Manager", "Gym Manager", "Gym Staff"} & set(frappe.get_roles()))
+		# Drives whether manager-only actions (e.g. Memberships.vue's "New
+		# Plan" button, NewMembershipModal.vue's "Create a new plan" link)
+		# even render - the real gate is still Membership Plan's own
+		# manager_full()/staff_ro() permissions in generate.py, enforced
+		# server-side by create_membership_plan()'s plain insert(); this
+		# just avoids showing Gym Staff a button that would only fail.
+		is_manager = bool({"System Manager", "Gym Manager"} & set(frappe.get_roles()))
 
 	# Gym Settings is world-readable-by-staff config, not user data, so this
 	# is fetched (cached) for Guest and logged-in requests alike - the
@@ -65,6 +73,7 @@ def get_context(context):
 			"full_name": full_name,
 			"user_image": user_image,
 			"is_staff": is_staff,
+			"is_manager": is_manager,
 			"site_name": frappe.local.site,
 			"gym_name": gym_name,
 			"gym_logo": gym_logo,

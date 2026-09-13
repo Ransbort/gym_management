@@ -109,7 +109,7 @@
           </div>
         </div>
 
-        <form class="mt-4 flex flex-col gap-2 border-t border-slate-200 pt-4" @submit.prevent="submitPayment">
+        <form v-if="selected.purchase.outstanding_amount !== 0" class="mt-4 flex flex-col gap-2 border-t border-slate-200 pt-4" @submit.prevent="submitPayment">
           <div class="flex items-center justify-between">
             <h3 class="text-xs font-semibold text-slate-600">{{ paymentForm.payment_type === 'Refund' ? 'Pay Back Member' : 'Collect Payment' }}</h3>
             <button
@@ -133,6 +133,7 @@
             {{ collecting ? 'Recording...' : (paymentForm.payment_type === 'Refund' ? 'Record Refund' : 'Record Payment') }}
           </button>
         </form>
+        <p v-else class="mt-4 border-t border-slate-200 pt-4 text-xs text-slate-500">Paid in full - nothing to collect.</p>
 
         <div class="mt-4 border-t border-slate-200 pt-3">
           <h3 class="mb-2 text-xs font-semibold text-slate-600">Payment History</h3>

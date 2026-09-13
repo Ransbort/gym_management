@@ -734,6 +734,40 @@ def get_membership_form_options():
 
 
 @frappe.whitelist()
+def create_membership_plan(
+	plan_name,
+	duration_months,
+	price,
+	class_credits_per_month=None,
+	includes_pt_sessions=None,
+	access_hours=None,
+	description=None,
+):
+	"""The "Can't find it? Create a new plan" link on NewMembershipModal.vue,
+	and the standalone "New Plan" button on Memberships.vue - lets a Gym
+	Manager define a new Membership Plan without leaving the dashboard for
+	the full Desk form, same shape as create_workout_plan() above.
+
+	A plain insert() (no ignore_permissions), same reasoning as that
+	function: Membership Plan is manager_full()/staff_ro() in generate.py,
+	so Gym Staff is correctly turned away with Frappe's own PermissionError
+	rather than this endpoint quietly granting more access than the doctype
+	itself allows.
+	"""
+	_check_staff()
+	plan = frappe.new_doc("Membership Plan")
+	plan.plan_name = plan_name
+	plan.duration_months = cint(duration_months)
+	plan.price = flt(price)
+	plan.class_credits_per_month = cint(class_credits_per_month) or 0
+	plan.includes_pt_sessions = cint(includes_pt_sessions) or 0
+	plan.access_hours = access_hours or "Full Access"
+	plan.description = (description or "").strip() or None
+	plan.insert()
+	return plan.as_dict()
+
+
+@frappe.whitelist()
 def backfill_membership_member_names():
 	"""One-off repair for Gym Membership rows left with stale/blank derived
 	fields, called once, harmlessly, from Memberships.vue's own mount -

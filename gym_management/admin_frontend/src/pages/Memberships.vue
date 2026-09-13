@@ -6,6 +6,13 @@
         <h1 class="text-xl font-bold text-slate-900">Memberships & Payments</h1>
         <div class="flex items-center gap-2">
           <button
+            v-if="auth.isManager"
+            class="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-50"
+            @click="showCreatePlan = true"
+          >
+            <i class="bi bi-card-checklist"></i> New Plan
+          </button>
+          <button
             class="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-50"
             @click="openCreateMember()"
           >
@@ -26,21 +33,45 @@
         @created="onMembershipCreated"
       />
 
-      <div class="mb-3 flex gap-2">
-        <select v-model="listPlan" class="w-56 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-[var(--gym-accent)] focus:outline-none focus:ring-2 focus:ring-[var(--gym-accent-ring)]" @change="loadList">
-          <option value="">All plans</option>
-          <option v-for="p in options.membership_plans" :key="p.name" :value="p.name">{{ p.plan_name }}</option>
-        </select>
-        <select v-model="listStatus" class="w-40 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-[var(--gym-accent)] focus:outline-none focus:ring-2 focus:ring-[var(--gym-accent-ring)]" @change="loadList">
-          <option value="">All statuses</option>
-          <option v-for="s in ['Draft', 'Active', 'Expired', 'Suspended', 'Cancelled']" :key="s" :value="s">{{ s }}</option>
-        </select>
+      <NewMembershipPlanModal
+        v-if="showCreatePlan"
+        @close="showCreatePlan = false"
+        @created="onPlanCreated"
+      />
+
+      <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
+        <div class="flex gap-2">
+          <select v-model="listPlan" class="w-56 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-[var(--gym-accent)] focus:outline-none focus:ring-2 focus:ring-[var(--gym-accent-ring)]" @change="loadList">
+            <option value="">All plans</option>
+            <option v-for="p in options.membership_plans" :key="p.name" :value="p.name">{{ p.plan_name }}</option>
+          </select>
+          <select v-model="listStatus" class="w-40 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-[var(--gym-accent)] focus:outline-none focus:ring-2 focus:ring-[var(--gym-accent-ring)]" @change="loadList">
+            <option value="">All statuses</option>
+            <option v-for="s in ['Draft', 'Active', 'Expired', 'Suspended', 'Cancelled']" :key="s" :value="s">{{ s }}</option>
+          </select>
+        </div>
+        <div class="flex items-center gap-1 rounded-lg bg-slate-200 p-1 text-xs font-semibold">
+          <button
+            type="button"
+            class="rounded-md px-2.5 py-1.5 transition-colors"
+            :class="viewMode === 'list' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-600 hover:text-slate-900'"
+            title="List view"
+            @click="viewMode = 'list'"
+          ><i class="bi bi-list-ul"></i></button>
+          <button
+            type="button"
+            class="rounded-md px-2.5 py-1.5 transition-colors"
+            :class="viewMode === 'grid' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-600 hover:text-slate-900'"
+            title="Grid view"
+            @click="viewMode = 'grid'"
+          ><i class="bi bi-grid-3x3-gap-fill"></i></button>
+        </div>
       </div>
 
       <div class="flex-1 overflow-y-auto rounded-xl border border-slate-200 bg-white">
         <p v-if="listLoading" class="px-4 py-6 text-sm text-slate-500">Loading...</p>
         <p v-else-if="!memberships.length" class="px-4 py-6 text-sm text-slate-500">No memberships found.</p>
-        <table v-else class="w-full text-left text-sm">
+        <table v-else-if="viewMode === 'list'" class="w-full text-left text-sm">
           <thead class="sticky top-0 border-b border-slate-200 bg-white text-slate-500">
             <tr>
               <th class="px-4 py-2 font-semibold">Member</th>
@@ -51,8 +82,8 @@
           </thead>
           <tbody>
             <tr v-for="m in memberships" :key="m.name"
-              class="cursor-pointer border-b border-slate-100 text-slate-700 hover:bg-slate-50"
-              :class="{ 'bg-slate-100': selected && selected.membership.name === m.name }"
+              class="cursor-pointer border-b border-slate-100 border-l-4 border-l-transparent text-slate-700 hover:bg-slate-50"
+              :class="{ '!border-l-[var(--gym-accent)] !bg-[var(--gym-accent-tint)]': selected && selected.membership.name === m.name }"
               @click="selectMembership(m.name)">
               <td class="px-4 py-2">{{ m.member_name }}</td>
               <td class="px-4 py-2">{{ m.membership_plan }}</td>
@@ -63,6 +94,24 @@
             </tr>
           </tbody>
         </table>
+        <div v-else class="grid grid-cols-1 gap-3 p-4 sm:grid-cols-2 xl:grid-cols-3">
+          <div v-for="m in memberships" :key="m.name"
+            class="cursor-pointer rounded-xl border-2 border-slate-200 bg-white p-3 transition-colors hover:border-slate-300"
+            :class="{ '!border-[var(--gym-accent)] !bg-[var(--gym-accent-tint)]': selected && selected.membership.name === m.name }"
+            @click="selectMembership(m.name)">
+            <div class="flex items-start justify-between gap-2">
+              <p class="min-w-0 truncate text-sm font-semibold text-slate-900">{{ m.member_name }}</p>
+              <span
+                class="shrink-0 rounded-full px-2 py-0.5 text-[11px] font-semibold"
+                :class="m.status === 'Active' ? 'bg-emerald-50 text-emerald-600' : m.status === 'Expired' ? 'bg-red-50 text-red-600' : 'bg-slate-100 text-slate-500'"
+              >{{ m.status }}</span>
+            </div>
+            <p class="mt-1 truncate text-xs text-slate-500">{{ m.membership_plan }}</p>
+            <p class="mt-2 text-xs font-semibold" :class="m.outstanding_amount > 0 ? 'text-amber-600' : 'text-emerald-600'">
+              Outstanding: {{ m.outstanding_amount }}
+            </p>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -107,7 +156,7 @@
           </div>
         </div>
 
-        <form class="mt-4 flex flex-col gap-2 border-t border-slate-200 pt-4" @submit.prevent="submitPayment">
+        <form v-if="selected.membership.outstanding_amount !== 0" class="mt-4 flex flex-col gap-2 border-t border-slate-200 pt-4" @submit.prevent="submitPayment">
           <div class="flex items-center justify-between">
             <h3 class="text-xs font-semibold text-slate-600">{{ paymentForm.payment_type === 'Refund' ? 'Pay Back Member' : 'Collect Payment' }}</h3>
             <!-- Only worth offering when there's actually a credit to pay
@@ -136,6 +185,7 @@
             {{ collecting ? 'Recording...' : (paymentForm.payment_type === 'Refund' ? 'Record Refund' : 'Record Payment') }}
           </button>
         </form>
+        <p v-else class="mt-4 border-t border-slate-200 pt-4 text-xs text-slate-500">Paid in full - nothing to collect.</p>
 
         <div class="mt-4 border-t border-slate-200 pt-3">
           <h3 class="mb-2 text-xs font-semibold text-slate-600">Payment History</h3>
@@ -178,9 +228,12 @@ import { onMounted, reactive, ref, watch } from 'vue';
 import { call, firstServerMessage } from '@/api/frappe';
 import CreateMemberModal from '@/components/CreateMemberModal.vue';
 import NewMembershipModal from '@/components/NewMembershipModal.vue';
+import NewMembershipPlanModal from '@/components/NewMembershipPlanModal.vue';
+import { useAuthStore } from '@/stores/auth';
 import { useUiStore } from '@/stores/ui';
 
 const ui = useUiStore();
+const auth = useAuthStore();
 
 function flt(value) {
   const n = Number(value);
@@ -197,8 +250,10 @@ const memberships = ref([]);
 const listPlan = ref('');
 const listStatus = ref('');
 const listLoading = ref(true);
+const viewMode = ref('list');
 const selected = ref(null);
 const showCreate = ref(false);
+const showCreatePlan = ref(false);
 const collecting = ref(false);
 const showCreateMember = ref(false);
 const createMemberPrefill = ref('');
@@ -240,6 +295,16 @@ function onMembershipCreated(membership) {
   showCreate.value = false;
   ui.showToast('Membership created.');
   loadList();
+}
+
+function onPlanCreated(plan) {
+  showCreatePlan.value = false;
+  ui.showToast(`${plan.plan_name} plan created.`);
+  // Newly created, so it isn't in the options.membership_plans list this
+  // page already fetched at mount - add it in place (same shape as
+  // NewMembershipModal.vue's own onPlanCreated()) so it shows up in the
+  // plan filter above immediately, without a full loadOptions() round-trip.
+  options.value.membership_plans = [...options.value.membership_plans, plan];
 }
 
 async function selectMembership(name) {

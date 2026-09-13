@@ -34,6 +34,14 @@
               <option value="" disabled>Select a plan...</option>
               <option v-for="p in options.membership_plans" :key="p.name" :value="p.name">{{ p.plan_name }} ({{ p.duration_months }}mo, {{ p.price }})</option>
             </select>
+            <button
+              v-if="auth.isManager"
+              type="button"
+              class="mt-1 text-xs font-semibold text-[var(--gym-accent)] hover:text-[var(--gym-accent-hover)]"
+              @click="showCreatePlan = true"
+            >
+              <i class="bi bi-plus-circle"></i> Can't find it? Create a new plan
+            </button>
           </Field>
 
           <Field label="Membership Plan Type" required>
@@ -120,6 +128,12 @@
       @close="showCreateMember = false"
       @created="onMemberCreated"
     />
+
+    <NewMembershipPlanModal
+      v-if="showCreatePlan"
+      @close="showCreatePlan = false"
+      @created="onPlanCreated"
+    />
   </Teleport>
 </template>
 
@@ -127,7 +141,10 @@
 import { h, onMounted, reactive, ref } from 'vue';
 import { call, firstServerMessage } from '@/api/frappe';
 import CreateMemberModal from '@/components/CreateMemberModal.vue';
+import NewMembershipPlanModal from '@/components/NewMembershipPlanModal.vue';
+import { useAuthStore } from '@/stores/auth';
 
+const auth = useAuthStore();
 const emit = defineEmits(['close', 'created']);
 
 const options = ref({
@@ -137,6 +154,7 @@ const options = ref({
 const creating = ref(false);
 const error = ref('');
 const showCreateMember = ref(false);
+const showCreatePlan = ref(false);
 
 const form = reactive({
   member: '',
@@ -172,6 +190,13 @@ function onMemberCreated(member) {
   // re-fetching the whole (up to 500-row) list just for one new row.
   options.value.members = [...options.value.members, member];
   form.member = member.name;
+}
+
+function onPlanCreated(plan) {
+  showCreatePlan.value = false;
+  // Same in-place-add shape as onMemberCreated() above.
+  options.value.membership_plans = [...options.value.membership_plans, plan];
+  form.membership_plan = plan.name;
 }
 
 async function submit() {
