@@ -87,13 +87,6 @@
           <dt class="text-slate-500">Payment</dt><dd class="text-right text-slate-700">{{ selected.purchase.payment_status }}</dd>
         </dl>
 
-        <form class="mt-3 flex items-center gap-2 border-t border-slate-200 pt-3" @submit.prevent="submitInvoiceReference">
-          <input v-model="invoiceReference" type="text" placeholder="Invoice ref (optional)" class="flex-1 rounded-full border border-slate-300 bg-white px-3 py-1.5 text-xs text-slate-900 focus:border-[var(--gym-accent)] focus:outline-none focus:ring-2 focus:ring-[var(--gym-accent-ring)]" />
-          <button type="submit" :disabled="savingInvoice" class="shrink-0 rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-50 disabled:opacity-60">
-            {{ savingInvoice ? 'Saving...' : 'Save' }}
-          </button>
-        </form>
-
         <div v-if="selected.purchase.outstanding_amount > 0 && options.enable_paystack_payments" class="mt-3 border-t border-slate-200 pt-3">
           <button
             type="button"
@@ -233,11 +226,9 @@ const listLoading = ref(true);
 const selected = ref(null);
 const showCreate = ref(false);
 const collecting = ref(false);
-const savingInvoice = ref(false);
 const loggingSession = ref(false);
 const sendingLink = ref(false);
 const paymentLink = ref('');
-const invoiceReference = ref('');
 
 const paymentForm = reactive({ amount: '', mode_of_payment: '', reference_no: '', payment_type: 'Payment' });
 const sessionForm = reactive({
@@ -280,7 +271,6 @@ function onPurchaseCreated(purchase) {
 async function selectPurchase(name) {
   try {
     selected.value = await call('gym_management.admin_api.get_pt_purchase', { name });
-    invoiceReference.value = selected.value.purchase.invoice_reference || '';
     // Pre-fill with what's actually owed, same "starting point, not a
     // straitjacket" idea Memberships.vue's own selectMembership() uses.
     const outstanding = flt(selected.value.purchase.outstanding_amount);
@@ -296,22 +286,6 @@ async function selectPurchase(name) {
     sessionForm.notes = '';
   } catch (err) {
     ui.showToast(firstServerMessage(err) || 'Could not load this purchase.', 'error');
-  }
-}
-
-async function submitInvoiceReference() {
-  if (!selected.value) return;
-  savingInvoice.value = true;
-  try {
-    await call('gym_management.admin_api.update_pt_purchase_invoice_reference', {
-      name: selected.value.purchase.name,
-      invoice_reference: invoiceReference.value,
-    });
-    ui.showToast('Invoice reference updated.');
-  } catch (err) {
-    ui.showToast(firstServerMessage(err) || 'Could not update the invoice reference.', 'error');
-  } finally {
-    savingInvoice.value = false;
   }
 }
 

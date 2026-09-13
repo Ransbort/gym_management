@@ -466,6 +466,43 @@ def get_checked_in_members():
 
 
 @frappe.whitelist()
+def list_attendance(query="", date_from=None, date_to=None, limit=200):
+	"""Historical check-in/check-out log for the Check-In page's "Attendance
+	Log" tab. Unlike get_checked_in_members() above (only members still
+	checked in right now, used by the live check-in screen and Overview),
+	this returns both closed and still-open sessions across a date range -
+	so admin can see who came in and out, and for how long, rather than only
+	who's on the floor at this exact moment. Defaults to today when no range
+	is given, same "start narrow, let staff widen it" idea search_members()
+	vs. list_members() uses elsewhere in this module.
+	"""
+	_check_staff()
+	date_from = date_from or nowdate()
+	date_to = date_to or nowdate()
+	filters = {"check_in_time": ["between", [f"{date_from} 00:00:00", f"{date_to} 23:59:59"]]}
+	query = (query or "").strip()
+	if query:
+		matches = frappe.get_all(
+			"Gym Member",
+			or_filters=[["member_name", "like", f"%{query}%"], ["phone", "like", f"%{query}%"]],
+			fields=["name"],
+			limit_page_length=200,
+		)
+		if not matches:
+			return []
+		filters["member"] = ["in", [m.name for m in matches]]
+	rows = frappe.get_all(
+		"Gym Attendance",
+		filters=filters,
+		fields=["name", "member", "check_in_time", "check_out_time", "duration_minutes", "checked_in_by"],
+		order_by="check_in_time desc",
+		limit_page_length=cint(limit) or 200,
+	)
+	_attach_member_names(rows)
+	return rows
+
+
+@frappe.whitelist()
 def check_in(member):
 	_check_staff()
 	if not frappe.db.exists("Gym Member", member):
@@ -1207,22 +1244,6 @@ def update_pt_session_status(name, status):
 
 
 @frappe.whitelist()
-def update_pt_purchase_invoice_reference(name, invoice_reference=None):
-	"""Edits just the free-text Invoice Reference from the purchase detail
-	panel. Replaces the old update_pt_purchase_payment() now that
-	payment_status is computed (see PT Package Purchase.calculate_payment_status()
-	in generate.py) rather than being a plain staff-set field - actually
-	moving money now goes through collect_pt_payment()/send_pt_payment_link()
-	below instead.
-	"""
-	_check_staff()
-	purchase = frappe.get_doc("PT Package Purchase", name)
-	purchase.invoice_reference = (invoice_reference or "").strip() or None
-	purchase.save()
-	return {"name": purchase.name, "invoice_reference": purchase.invoice_reference}
-
-
-@frappe.whitelist()
 def collect_pt_payment(pt_package_purchase, amount, mode_of_payment, payment_type="Payment", reference_no=None, remarks=None):
 	"""Collect Payment / Pay Back Member form on a purchase's detail panel -
 	mirrors Gym Membership's own collect_payment(). payment_type="Refund"
@@ -1303,12 +1324,24 @@ def backfill_pt_purchase_derived_fields():
 	checkout page without them. Safe to call on every PersonalTraining.vue
 	mount - a no-op once every row has already been fixed.
 
+	Also repairs outstanding_amount/payment_status for the same kind of
+	pre-existing row: both are computed by calculate_payment_status() (see
+	generate.py) but only actually run through it on save() - `bench migrate`
+	adding these columns gave every already-existing purchase a column
+	default of 0/"Unpaid" rather than the value its own controller would
+	compute, so a purchase with a real Amount and nothing paid can be left
+	stuck showing Outstanding 0 (and, with it, "Send Paystack Payment Link"
+	incorrectly hidden, since that button is gated on outstanding_amount > 0)
+	until the row happens to be saved again. Purely deterministic math from
+	amount/paid_amount, never touching paid_amount itself, so safe to
+	recompute directly.
+
 	Note: this does NOT synthesize a PT Payment for a purchase that was
 	previously marked "Paid" by hand (before this ledger existed) - inventing
 	a payment record with a guessed amount/mode of payment would be a false
-	accounting entry. Any such purchase will correctly show Unpaid again
-	(computed from its real paid_amount of 0) until an actual payment is
-	recorded against it.
+	accounting entry. Any such purchase will correctly show Unpaid/fully
+	outstanding (computed from its real paid_amount of 0) until an actual
+	payment is recorded against it.
 	"""
 	_check_staff()
 	default_company = frappe.defaults.get_global_default("company")
@@ -1341,6 +1374,26 @@ def backfill_pt_purchase_derived_fields():
 		if updates:
 			frappe.db.set_value("PT Package Purchase", row.name, updates, update_modified=False)
 			fixed += 1
+
+	for row in frappe.get_all(
+		"PT Package Purchase", fields=["name", "amount", "paid_amount", "outstanding_amount", "payment_status"]
+	):
+		paid = flt(row.paid_amount)
+		correct_outstanding = flt(row.amount) - paid
+		if paid <= 0:
+			correct_status = "Unpaid"
+		elif correct_outstanding > 0:
+			correct_status = "Partially Paid"
+		else:
+			correct_status = "Paid"
+		if abs(flt(row.outstanding_amount) - correct_outstanding) > 0.005 or row.payment_status != correct_status:
+			frappe.db.set_value(
+				"PT Package Purchase", row.name,
+				{"outstanding_amount": correct_outstanding, "payment_status": correct_status},
+				update_modified=False,
+			)
+			fixed += 1
+
 	if fixed:
 		frappe.db.commit()
 	return {"fixed": fixed}
