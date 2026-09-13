@@ -117,7 +117,8 @@
    "email": 1,
    "export": 1,
    "share": 1,
-   "report": 1
+   "report": 1,
+   "import": 1
   },
   {
    "role": "Gym Manager",
@@ -128,7 +129,8 @@
    "print": 1,
    "email": 1,
    "export": 1,
-   "report": 1
+   "report": 1,
+   "import": 1
   },
   {
    "role": "Gym Staff",
@@ -146,5 +148,6 @@
    "print": 1,
    "report": 1
   }
- ]
+ ],
+ "allow_import": 1
 }
