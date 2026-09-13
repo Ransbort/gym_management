@@ -22,44 +22,43 @@ add_to_apps_screen = [
 # app_include_css = "/assets/gym_management/css/gym_management.css"
 # app_include_js = "/assets/gym_management/js/gym_management.js"
 
-# Website / Portal
-# -----------------
-# Adds "Gym Portal" under the website's My Account menu (/me) for logged-in
-# members and trainers.
-standard_portal_menu_items = [
-	{"title": "Gym Portal", "route": "/gym-portal", "reference_doctype": "", "role": ""},
-]
-
 # Website Route Rules
 # --------------------
-# /gym-portal is now the Vue Portal SPA (gym_management/frontend - built
-# straight into public/portal, no separate deploy step). Vue Router takes
-# over client-side once the page has loaded, but a hard reload or a shared
-# link straight to a nested route like /gym-portal/trainer is still a
-# fresh server-side request for that exact path - without this catch-all,
-# Frappe would 404 it before Vue Router ever got a chance to take over.
-# Every /gym-portal/* path maps to the same www/gym-portal/index.html
-# shell; the bare /gym-portal itself needs no rule of its own (default
-# www/gym-portal/index.html routing already handles it).
-#
 # /gym-admin is the fullscreen, PWA-installable staff dashboard
-# (gym_management/admin_frontend, modelled on POSNext's /pos) - same
-# catch-all reasoning as /gym-portal above.
+# (gym_management/admin_frontend, modelled on POSNext's /pos). Vue Router
+# takes over client-side once the shell has loaded, but a hard reload or a
+# shared link straight to a nested route like /gym-admin/memberships is
+# still a fresh server-side request for that exact path - without this
+# catch-all, Frappe would 404 it before Vue Router ever got a chance to
+# take over. Every /gym-admin/* path maps to the same www/gym-admin/
+# index.html shell; the bare /gym-admin itself needs no rule of its own
+# (default www/gym-admin/index.html routing already handles it).
+#
+# The old member/trainer self-service website (/gym-portal, gym_management/
+# frontend) has been retired now that the team has fully migrated onto this
+# Vue admin dashboard - its route rule, website menu item, and dedicated
+# API surface (portal.py) are gone along with it. Gym Member.user "Portal
+# Access" and the Gym Portal Member/Trainer roles (see install.py) are
+# unrelated Desk/permission plumbing and are left in place.
 website_route_rules = [
-	{"from_route": "/gym-portal/<path:app_path>", "to_route": "gym-portal"},
 	{"from_route": "/gym-admin/<path:app_path>", "to_route": "gym-admin"},
 ]
 
 # Document Events
 # ----------------
 # Reconciles a *paid* frappe_paystack Paystack Payment Log (a separately
-# installed third-party app - see admin_api.py's send_payment_link() and
-# utils/paystack.py) into a real Gym Membership Payment record. Harmless if
+# installed third-party app - see admin_api.py's send_payment_link()/
+# send_pt_payment_link() and utils/paystack.py) into a real Gym Membership
+# Payment or PT Payment record, depending on which doctype the log is linked
+# to (each function below is a no-op for the other one). Harmless if
 # frappe_paystack isn't installed on a given site - this doctype then simply
 # never exists there, so the event never fires.
 doc_events = {
 	"Paystack Payment Log": {
-		"on_update": "gym_management.utils.paystack.sync_gym_membership_payment",
+		"on_update": [
+			"gym_management.utils.paystack.sync_gym_membership_payment",
+			"gym_management.utils.paystack.sync_pt_purchase_payment",
+		],
 	},
 }
 

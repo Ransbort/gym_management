@@ -12,9 +12,9 @@
 
       <form class="flex flex-col gap-4" @submit.prevent="submit">
         <div>
-          <label class="mb-1 block text-sm font-semibold text-slate-700" for="usr">Email</label>
+          <label class="mb-1 block text-sm font-semibold text-slate-700" for="usr">Sign In ID</label>
           <input
-            id="usr" v-model="usr" type="email" autocomplete="username" required
+            id="usr" v-model="usr" type="text" autocomplete="username" required placeholder="e.g. gym-admin"
             class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:border-[var(--gym-accent)] focus:outline-none focus:ring-2 focus:ring-[var(--gym-accent-ring)]"
           />
         </div>

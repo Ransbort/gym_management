@@ -19,7 +19,6 @@
         <form v-else id="gym-settings-form" class="flex flex-col gap-4" @submit.prevent="submit">
           <label class="block">
             <span class="mb-1 block text-sm font-semibold text-slate-700">Theme Color</span>
-            <span class="mb-2 block text-xs text-slate-500">Used for buttons, links and highlights across the dashboard.</span>
             <div class="flex items-center gap-2">
               <input
                 v-model="form.theme_color" type="color"
@@ -35,10 +34,7 @@
           <div>
             <label class="flex items-start gap-2">
               <input v-model="form.enable_paystack_payments" type="checkbox" class="mt-0.5 h-4 w-4 shrink-0 rounded border-slate-300 text-[var(--gym-accent)] focus:ring-[var(--gym-accent-ring)]" />
-              <span>
-                <span class="block text-sm font-semibold text-slate-700">Enable Paystack Payments</span>
-                <span class="block text-xs text-slate-500">Lets staff generate a Paystack payment link from Memberships. Also requires a matching, enabled Paystack Gateway Setting record for the company.</span>
-              </span>
+              <span class="block text-sm font-semibold text-slate-700">Enable Paystack Payments</span>
             </label>
 
             <label v-if="form.enable_paystack_payments" class="mt-2 block pl-6">
@@ -52,6 +48,17 @@
               </select>
             </label>
           </div>
+
+          <label class="block border-t border-slate-100 pt-3">
+            <span class="mb-1 block text-sm font-semibold text-slate-700">Default Income Account</span>
+            <select
+              v-model="form.default_income_account"
+              class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-[var(--gym-accent)] focus:outline-none focus:ring-2 focus:ring-[var(--gym-accent-ring)]"
+            >
+              <option value="">Not set - don't post to Chart of Accounts</option>
+              <option v-for="a in options.income_accounts" :key="a.name" :value="a.name">{{ a.name }}</option>
+            </select>
+          </label>
 
           <p v-if="error" class="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{{ error }}</p>
           <p v-if="saved" class="rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-700">Saved.</p>
@@ -86,8 +93,13 @@ import { applyTheme } from '@/theme';
 const emit = defineEmits(['close']);
 const auth = useAuthStore();
 
-const form = reactive({ theme_color: auth.themeColor, enable_paystack_payments: false, default_payment_gateway: '' });
-const options = ref({ payment_gateways: [] });
+const form = reactive({
+  theme_color: auth.themeColor,
+  enable_paystack_payments: false,
+  default_payment_gateway: '',
+  default_income_account: '',
+});
+const options = ref({ payment_gateways: [], income_accounts: [] });
 const loading = ref(true);
 const saving = ref(false);
 const error = ref('');
@@ -105,7 +117,9 @@ async function load() {
     form.theme_color = settings.theme_color;
     form.enable_paystack_payments = !!settings.enable_paystack_payments;
     form.default_payment_gateway = settings.default_payment_gateway || '';
+    form.default_income_account = settings.default_income_account || '';
     options.value.payment_gateways = settings.payment_gateways || [];
+    options.value.income_accounts = settings.income_accounts || [];
   } catch (err) {
     error.value = firstServerMessage(err) || 'Could not load Gym Settings.';
   } finally {
@@ -122,6 +136,7 @@ async function submit() {
       theme_color: form.theme_color,
       enable_paystack_payments: form.enable_paystack_payments ? 1 : 0,
       default_payment_gateway: form.default_payment_gateway,
+      default_income_account: form.default_income_account,
     });
     // Live-apply immediately (window.adminBoot itself only refreshes on the
     // next full page load) so the color change is visible the instant this

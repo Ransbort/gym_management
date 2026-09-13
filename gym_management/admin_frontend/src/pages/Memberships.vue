@@ -20,10 +20,6 @@
         </div>
       </div>
 
-      <p v-if="flash" :class="['mb-3 rounded-lg px-3 py-2 text-sm', flashError ? 'bg-red-50 text-red-700' : 'bg-emerald-50 text-emerald-700']">
-        {{ flash }}
-      </p>
-
       <NewMembershipModal
         v-if="showCreate"
         @close="showCreate = false"
@@ -82,7 +78,10 @@
         <dl class="mt-3 grid grid-cols-2 gap-2 text-xs">
           <dt class="text-slate-500">Grand Total</dt><dd class="text-right text-slate-700">{{ selected.membership.grand_total }}</dd>
           <dt class="text-slate-500">Paid</dt><dd class="text-right text-slate-700">{{ selected.membership.paid_amount }}</dd>
-          <dt class="text-slate-500">Outstanding</dt><dd class="text-right font-semibold text-amber-600">{{ selected.membership.outstanding_amount }}</dd>
+          <dt class="text-slate-500">Outstanding</dt>
+          <dd class="text-right font-semibold" :class="selected.membership.outstanding_amount > 0 ? 'text-amber-600' : 'text-emerald-600'">
+            {{ selected.membership.outstanding_amount }}<span v-if="selected.membership.outstanding_amount < 0" class="ml-1 font-normal text-slate-400">(credit)</span>
+          </dd>
           <dt class="text-slate-500">Status</dt><dd class="text-right text-slate-700">{{ selected.membership.status }} / {{ selected.membership.payment_status }}</dd>
         </dl>
 
@@ -109,7 +108,22 @@
         </div>
 
         <form class="mt-4 flex flex-col gap-2 border-t border-slate-200 pt-4" @submit.prevent="submitPayment">
-          <h3 class="text-xs font-semibold text-slate-600">Collect Payment</h3>
+          <div class="flex items-center justify-between">
+            <h3 class="text-xs font-semibold text-slate-600">{{ paymentForm.payment_type === 'Refund' ? 'Pay Back Member' : 'Collect Payment' }}</h3>
+            <!-- Only worth offering when there's actually a credit to pay
+                 back - outstanding_amount < 0 means paid_amount exceeds
+                 grand_total (e.g. an overpayment or a duplicated Paystack
+                 confirmation - see Gym Membership Payment's own validate(),
+                 which also hard-caps a refund at what's actually been paid). -->
+            <button
+              v-if="selected.membership.outstanding_amount < 0 || paymentForm.payment_type === 'Refund'"
+              type="button"
+              class="text-xs font-semibold text-[var(--gym-accent)] hover:underline"
+              @click="paymentForm.payment_type = paymentForm.payment_type === 'Refund' ? 'Payment' : 'Refund'"
+            >
+              {{ paymentForm.payment_type === 'Refund' ? 'Collect payment instead' : 'Pay back credit instead' }}
+            </button>
+          </div>
           <input v-model="paymentForm.amount" type="number" step="0.01" min="0.01" placeholder="Amount" class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-[var(--gym-accent)] focus:outline-none focus:ring-2 focus:ring-[var(--gym-accent-ring)]" required />
           <select v-model="paymentForm.mode_of_payment" class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-[var(--gym-accent)] focus:outline-none focus:ring-2 focus:ring-[var(--gym-accent-ring)]" required>
             <option value="" disabled>Mode of payment...</option>
@@ -117,8 +131,9 @@
           </select>
           <input v-model="paymentForm.reference_no" type="text" placeholder="Reference / receipt no. (optional)" class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-[var(--gym-accent)] focus:outline-none focus:ring-2 focus:ring-[var(--gym-accent-ring)]" />
           <button type="submit" :disabled="collecting"
-            class="rounded-lg bg-[var(--gym-accent)] px-3 py-2 text-sm font-semibold text-white hover:bg-[var(--gym-accent-hover)] disabled:opacity-60">
-            {{ collecting ? 'Recording...' : 'Record Payment' }}
+            class="rounded-lg px-3 py-2 text-sm font-semibold text-white disabled:opacity-60"
+            :class="paymentForm.payment_type === 'Refund' ? 'bg-amber-500 hover:bg-amber-600' : 'bg-[var(--gym-accent)] hover:bg-[var(--gym-accent-hover)]'">
+            {{ collecting ? 'Recording...' : (paymentForm.payment_type === 'Refund' ? 'Record Refund' : 'Record Payment') }}
           </button>
         </form>
 
@@ -126,9 +141,23 @@
           <h3 class="mb-2 text-xs font-semibold text-slate-600">Payment History</h3>
           <p v-if="!selected.payments.length" class="text-xs text-slate-500">No payments recorded yet.</p>
           <ul v-else class="space-y-1.5 text-xs">
-            <li v-for="p in selected.payments" :key="p.name" class="flex justify-between text-slate-600">
-              <span>{{ p.payment_date }} - {{ p.mode_of_payment }}</span>
-              <span class="font-semibold text-emerald-600">{{ p.amount }}</span>
+            <li v-for="p in selected.payments" :key="p.name" class="flex items-center justify-between text-slate-600">
+              <span class="flex items-center gap-1">
+                {{ p.payment_date }} - {{ p.mode_of_payment }}{{ p.payment_type === 'Refund' ? ' (Refund)' : '' }}
+                <i
+                  v-if="p.journal_entry"
+                  class="bi bi-check-circle-fill text-emerald-500"
+                  :title="`Posted to Chart of Accounts (${p.journal_entry})`"
+                ></i>
+                <i
+                  v-else
+                  class="bi bi-dash-circle text-slate-300"
+                  title="Not yet posted to Chart of Accounts - set Gym Settings > Default Income Account"
+                ></i>
+              </span>
+              <span class="font-semibold" :class="p.payment_type === 'Refund' ? 'text-amber-600' : 'text-emerald-600'">
+                {{ p.payment_type === 'Refund' ? '-' : '' }}{{ p.amount }}
+              </span>
             </li>
           </ul>
         </div>
@@ -153,6 +182,11 @@ import { useUiStore } from '@/stores/ui';
 
 const ui = useUiStore();
 
+function flt(value) {
+  const n = Number(value);
+  return Number.isFinite(n) ? n : 0;
+}
+
 // mode_of_payments (Collect Payment panel) and membership_plans (the plan
 // filter above, replacing the old free-text member search - picking a plan
 // there filters this list down to just the members subscribed to it) -
@@ -166,26 +200,18 @@ const listLoading = ref(true);
 const selected = ref(null);
 const showCreate = ref(false);
 const collecting = ref(false);
-const flash = ref('');
-const flashError = ref(false);
 const showCreateMember = ref(false);
 const createMemberPrefill = ref('');
 const sendingLink = ref(false);
 const paymentLink = ref('');
 
-const paymentForm = reactive({ amount: '', mode_of_payment: '', reference_no: '' });
-
-function showFlash(message, isError) {
-  flash.value = message;
-  flashError.value = !!isError;
-  setTimeout(() => { if (flash.value === message) flash.value = ''; }, 4000);
-}
+const paymentForm = reactive({ amount: '', mode_of_payment: '', reference_no: '', payment_type: 'Payment' });
 
 async function loadOptions() {
   try {
     options.value = await call('gym_management.admin_api.get_membership_form_options');
   } catch (err) {
-    showFlash(firstServerMessage(err) || 'Could not load form options.', true);
+    ui.showToast(firstServerMessage(err) || 'Could not load form options.', 'error');
   }
 }
 
@@ -194,7 +220,7 @@ async function loadList() {
   try {
     memberships.value = await call('gym_management.admin_api.list_memberships', { membership_plan: listPlan.value, status: listStatus.value });
   } catch (err) {
-    showFlash(firstServerMessage(err) || 'Could not load memberships.', true);
+    ui.showToast(firstServerMessage(err) || 'Could not load memberships.', 'error');
   } finally {
     listLoading.value = false;
   }
@@ -207,24 +233,37 @@ function openCreateMember(prefill) {
 
 function onMemberCreated(member) {
   showCreateMember.value = false;
-  showFlash(`${member.member_name} created.`, false);
+  ui.showToast(`${member.member_name} created.`);
 }
 
 function onMembershipCreated(membership) {
   showCreate.value = false;
-  showFlash('Membership created.', false);
+  ui.showToast('Membership created.');
   loadList();
 }
 
 async function selectMembership(name) {
   try {
     selected.value = await call('gym_management.admin_api.get_membership', { name });
-    paymentForm.amount = '';
+    // Pre-fill with what's actually owed (or, for a credit balance, what's
+    // owed back) instead of leaving it blank - outstanding_amount is 0 or
+    // positive for a normal balance (equal to Grand Total on a fresh, unpaid
+    // membership - see get_membership()) and negative for a credit, so this
+    // also self-adjusts correctly for a partially-paid membership rather
+    // than always suggesting the full Grand Total regardless of what's
+    // already been paid. Still just a starting point - staff can edit it
+    // for a partial payment.
+    const outstanding = flt(selected.value.membership.outstanding_amount);
+    paymentForm.amount = outstanding !== 0 ? Math.abs(outstanding) : '';
     paymentForm.mode_of_payment = '';
     paymentForm.reference_no = '';
+    // Default to Refund only when there's actually a credit to pay back -
+    // otherwise a freshly-selected membership always starts on the normal
+    // Collect Payment path.
+    paymentForm.payment_type = outstanding < 0 ? 'Refund' : 'Payment';
     paymentLink.value = '';
   } catch (err) {
-    showFlash(firstServerMessage(err) || 'Could not load this membership.', true);
+    ui.showToast(firstServerMessage(err) || 'Could not load this membership.', 'error');
   }
 }
 
@@ -237,14 +276,13 @@ async function sendPaymentLink() {
       gym_membership: selected.value.membership.name,
     });
     paymentLink.value = result.link;
-    showFlash(
+    ui.showToast(
       result.emailed
         ? `Payment link emailed to ${result.email}.`
-        : 'Payment link generated - copy it below to share with the member.',
-      false
+        : 'Payment link generated - copy it below to share with the member.'
     );
   } catch (err) {
-    showFlash(firstServerMessage(err) || 'Could not generate a payment link.', true);
+    ui.showToast(firstServerMessage(err) || 'Could not generate a payment link.', 'error');
   } finally {
     sendingLink.value = false;
   }
@@ -254,9 +292,9 @@ async function copyPaymentLink() {
   if (!paymentLink.value) return;
   try {
     await navigator.clipboard.writeText(paymentLink.value);
-    showFlash('Link copied.', false);
+    ui.showToast('Link copied.');
   } catch (err) {
-    showFlash('Could not copy - select and copy the link manually.', true);
+    ui.showToast('Could not copy - select and copy the link manually.', 'error');
   }
 }
 
@@ -268,13 +306,14 @@ async function submitPayment() {
       gym_membership: selected.value.membership.name,
       amount: paymentForm.amount,
       mode_of_payment: paymentForm.mode_of_payment,
+      payment_type: paymentForm.payment_type,
       reference_no: paymentForm.reference_no,
     });
-    showFlash('Payment recorded.', false);
+    ui.showToast(paymentForm.payment_type === 'Refund' ? 'Refund recorded.' : 'Payment recorded.');
     await selectMembership(selected.value.membership.name);
     loadList();
   } catch (err) {
-    showFlash(firstServerMessage(err) || 'Could not record this payment.', true);
+    ui.showToast(firstServerMessage(err) || 'Could not record this payment.', 'error');
   } finally {
     collecting.value = false;
   }
@@ -294,10 +333,26 @@ async function repairMemberNames() {
   }
 }
 
+// Same self-healing shape as repairMemberNames() above: a no-op once every
+// payment either already has a Journal Entry or has been logged as
+// unpostable (see Gym Membership Payment.create_accounting_entry()'s own
+// missing-account log_error) - catches payments up to the Chart of
+// Accounts once Gym Settings > Default Income Account gets configured,
+// without staff having to trigger anything manually.
+async function repairPaymentAccounting() {
+  try {
+    await call('gym_management.admin_api.backfill_membership_payment_accounting');
+  } catch (err) {
+    // Non-fatal: worst case some older payments stay un-posted until the
+    // next successful mount.
+  }
+}
+
 onMounted(() => {
   loadOptions();
   loadList();
   repairMemberNames();
+  repairPaymentAccounting();
 });
 watch(() => ui.refreshKey, () => {
   loadOptions();

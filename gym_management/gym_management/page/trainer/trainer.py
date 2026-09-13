@@ -2,11 +2,7 @@
 # For license information, please see license.txt
 """Server side for the Desk "Trainer" page (gym_management.page.trainer).
 
-Desk equivalent of the website Trainer dashboard (www/gym-portal/trainer.*):
-a Gym Trainer logs into the Desk (not the website) and works from this page
-instead of /gym-portal/trainer. Unlike the website portal - built for
-website users with no DocType permissions, where every action does its own
-ownership check before an ignore_permissions=True write - a Desk user
+A Gym Trainer logs into the Desk and works from this page. A Desk user
 reaching this page already holds a real role (Gym Trainer / Gym Staff / Gym
 Manager / System Manager, see trainer.json's "roles") with its own
 DocType-level permissions (see generate.py's trainer_rw() / staff_rw() /

@@ -2,7 +2,7 @@
   <div class="flex h-full flex-col bg-slate-50 p-6">
     <h1 class="mb-4 text-xl font-bold text-slate-900">Front-Desk Check-In</h1>
 
-    <div class="relative mb-4">
+    <div class="relative mb-4 max-w-sm">
       <i class="bi bi-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
       <input
         v-model="query" type="text" placeholder="Search by name or mobile number..."
@@ -11,9 +11,6 @@
       />
     </div>
 
-    <p v-if="flash" :class="['mb-3 rounded-lg px-3 py-2 text-sm', flashError ? 'bg-red-50 text-red-700' : 'bg-emerald-50 text-emerald-700']">
-      {{ flash }}
-    </p>
     <p v-if="!ui.isOnline" class="mb-3 rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-700">
       <i class="bi bi-wifi-off"></i> Offline - check-in/out actions are queued and will sync automatically.
     </p>
@@ -71,8 +68,6 @@ const ui = useUiStore();
 const query = ref('');
 const members = ref([]);
 const loading = ref(true);
-const flash = ref('');
-const flashError = ref(false);
 const busy = reactive(new Set());
 const showCreateMember = ref(false);
 let searchTimer = null;
@@ -82,14 +77,6 @@ let searchTimer = null;
 // box matches on either.
 function isLikelyName(value) {
   return /[a-zA-Z]/.test(value || '');
-}
-
-function showFlash(message, isError) {
-  flash.value = message;
-  flashError.value = !!isError;
-  setTimeout(() => {
-    if (flash.value === message) flash.value = '';
-  }, 4000);
 }
 
 async function load() {
@@ -104,7 +91,7 @@ async function load() {
     members.value = result;
     cacheMembers(result);
   } catch (err) {
-    showFlash(firstServerMessage(err) || 'Could not load members - showing last known list.', true);
+    ui.showToast(firstServerMessage(err) || 'Could not load members - showing last known list.', 'error');
     members.value = await getCachedMembers();
   } finally {
     loading.value = false;
@@ -122,7 +109,7 @@ function openCreateMember() {
 
 function onMemberCreated(member) {
   showCreateMember.value = false;
-  showFlash(`${member.member_name} created.`, false);
+  ui.showToast(`${member.member_name} created.`);
   query.value = member.member_name;
   load();
 }
@@ -133,14 +120,14 @@ async function checkIn(member) {
   try {
     if (navigator.onLine) {
       await call('gym_management.admin_api.check_in', { member: member.name });
-      showFlash(`${member.member_name} checked in.`, false);
+      ui.showToast(`${member.member_name} checked in.`);
     } else {
       await queueAction('check_in', member.name);
-      showFlash(`${member.member_name} checked in (queued offline - will sync automatically).`, false);
+      ui.showToast(`${member.member_name} checked in (queued offline - will sync automatically).`);
     }
   } catch (err) {
     member.checked_in = false;
-    showFlash(firstServerMessage(err) || 'Could not check this member in.', true);
+    ui.showToast(firstServerMessage(err) || 'Could not check this member in.', 'error');
   } finally {
     busy.delete(member.name);
   }
@@ -152,14 +139,14 @@ async function checkOut(member) {
   try {
     if (navigator.onLine) {
       await call('gym_management.admin_api.check_out', { member: member.name });
-      showFlash(`${member.member_name} checked out.`, false);
+      ui.showToast(`${member.member_name} checked out.`);
     } else {
       await queueAction('check_out', member.name);
-      showFlash(`${member.member_name} checked out (queued offline - will sync automatically).`, false);
+      ui.showToast(`${member.member_name} checked out (queued offline - will sync automatically).`);
     }
   } catch (err) {
     member.checked_in = true;
-    showFlash(firstServerMessage(err) || 'Could not check this member out.', true);
+    ui.showToast(firstServerMessage(err) || 'Could not check this member out.', 'error');
   } finally {
     busy.delete(member.name);
   }
@@ -169,7 +156,7 @@ function handleOnline() {
   ui.setOnline(true);
   flushPendingActions().then((result) => {
     if (result.flushed) {
-      showFlash(`Synced ${result.flushed} queued check-in/out action(s).`, false);
+      ui.showToast(`Synced ${result.flushed} queued check-in/out action(s).`);
       load();
     }
   });

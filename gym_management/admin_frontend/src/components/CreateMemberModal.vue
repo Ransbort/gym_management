@@ -18,6 +18,34 @@
 
         <form id="create-member-form" class="flex flex-1 flex-col gap-4 overflow-y-auto pr-1" @submit.prevent="submit">
           <label class="block">
+            <span class="mb-1 block text-sm font-semibold text-slate-700">Photo</span>
+            <div class="flex items-center gap-3">
+              <div class="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-full bg-slate-100 text-slate-400">
+                <img v-if="photoPreview" :src="photoPreview" class="h-full w-full object-cover" alt="" />
+                <i v-else class="bi bi-person-fill text-2xl"></i>
+              </div>
+              <div class="flex flex-col items-start gap-1">
+                <button
+                  type="button"
+                  class="text-xs font-semibold text-[var(--gym-accent)] hover:text-[var(--gym-accent-hover)]"
+                  @click="photoInput?.click()"
+                >
+                  <i class="bi bi-upload"></i> {{ photoFile ? 'Change photo' : 'Upload photo' }}
+                </button>
+                <button
+                  v-if="photoFile"
+                  type="button"
+                  class="text-xs font-semibold text-slate-400 hover:text-red-600"
+                  @click="clearPhoto"
+                >
+                  Remove
+                </button>
+              </div>
+              <input ref="photoInput" type="file" accept="image/*" class="hidden" @change="onPhotoSelected" />
+            </div>
+          </label>
+
+          <label class="block">
             <span class="mb-1 block text-sm font-semibold text-slate-700">Member Name<span class="text-red-500">*</span></span>
             <input
               v-model="form.member_name" ref="firstField" type="text" required placeholder="e.g. Jane Doe"
@@ -147,8 +175,8 @@
 </template>
 
 <script setup>
-import { computed, nextTick, onMounted, reactive, ref } from 'vue';
-import { call, firstServerMessage } from '@/api/frappe';
+import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref } from 'vue';
+import { call, firstServerMessage, uploadFile } from '@/api/frappe';
 
 // Optional: pre-fill the name/mobile fields from whatever the caller had
 // already typed into a search box (CheckIn's search, or the New Membership
@@ -173,6 +201,9 @@ const options = ref({ customers: [] });
 const creating = ref(false);
 const error = ref('');
 const firstField = ref(null);
+const photoInput = ref(null);
+const photoFile = ref(null);
+const photoPreview = ref('');
 
 const isValid = computed(() => form.member_name.trim() && form.phone.trim());
 
@@ -180,6 +211,25 @@ function cancel() {
   if (creating.value) return;
   emit('close');
 }
+
+function onPhotoSelected(e) {
+  const file = e.target.files && e.target.files[0];
+  if (!file) return;
+  if (photoPreview.value) URL.revokeObjectURL(photoPreview.value);
+  photoFile.value = file;
+  photoPreview.value = URL.createObjectURL(file);
+}
+
+function clearPhoto() {
+  if (photoPreview.value) URL.revokeObjectURL(photoPreview.value);
+  photoFile.value = null;
+  photoPreview.value = '';
+  if (photoInput.value) photoInput.value.value = '';
+}
+
+onBeforeUnmount(() => {
+  if (photoPreview.value) URL.revokeObjectURL(photoPreview.value);
+});
 
 async function loadOptions() {
   try {
@@ -195,6 +245,16 @@ async function submit() {
   creating.value = true;
   error.value = '';
   try {
+    let photoUrl = '';
+    if (photoFile.value) {
+      try {
+        const uploaded = await uploadFile(photoFile.value);
+        photoUrl = uploaded.file_url;
+      } catch (err) {
+        error.value = 'Could not upload the photo. Try again, or create the member without one.';
+        return;
+      }
+    }
     const member = await call('gym_management.admin_api.create_member', {
       member_name: form.member_name.trim(),
       phone: form.phone.trim(),
@@ -207,6 +267,7 @@ async function submit() {
       date_joined: form.date_joined,
       health_notes: form.health_notes.trim(),
       customer: form.customer,
+      photo: photoUrl,
     });
     emit('created', member);
   } catch (err) {

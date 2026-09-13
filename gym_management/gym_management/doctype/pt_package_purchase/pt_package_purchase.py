@@ -2,7 +2,7 @@
 # For license information, please see license.txt
 
 import frappe
-from frappe.utils import add_days, getdate, nowdate
+from frappe.utils import add_days, flt, getdate, nowdate
 from frappe.model.document import Document
 
 
@@ -16,6 +16,21 @@ class PTPackagePurchase(Document):
 		if not self.expiry_date:
 			self.expiry_date = add_days(self.purchase_date, package.validity_days)
 		self.recalculate_status(save=False)
+		self.calculate_payment_status()
+
+	def calculate_payment_status(self):
+		"""Mirrors Gym Membership.calculate_totals()'s own payment_status
+		logic: Paid Amount is only ever moved by a real PT Payment record
+		(see that doctype's apply_to_purchase()), so this always reflects an
+		actual recorded payment rather than a manually-picked status.
+		"""
+		self.outstanding_amount = flt(self.amount) - flt(self.paid_amount)
+		if flt(self.paid_amount) <= 0:
+			self.payment_status = "Unpaid"
+		elif self.outstanding_amount > 0:
+			self.payment_status = "Partially Paid"
+		else:
+			self.payment_status = "Paid"
 
 	def recalculate_status(self, save=True):
 		used = frappe.db.count(

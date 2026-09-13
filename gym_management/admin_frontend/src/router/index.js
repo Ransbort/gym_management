@@ -27,6 +27,12 @@ const routes = [
     meta: { requiresAuth: true },
   },
   {
+    path: '/personal-training',
+    name: 'PersonalTraining',
+    component: () => import('@/pages/PersonalTraining.vue'),
+    meta: { requiresAuth: true },
+  },
+  {
     path: '/login',
     name: 'Login',
     component: () => import('@/pages/Login.vue'),

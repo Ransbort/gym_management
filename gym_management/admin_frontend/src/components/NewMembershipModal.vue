@@ -51,14 +51,11 @@
           </Field>
 
           <Field label="Time Slot" required>
-            <input v-model="form.time_slot" type="text" placeholder="e.g. 6:00 AM - 7:00 AM" class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-[var(--gym-accent)] focus:outline-none focus:ring-2 focus:ring-[var(--gym-accent-ring)]" required />
-          </Field>
-
-          <Field label="Mode of Payment" required>
-            <select v-model="form.mode_of_payment" class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-[var(--gym-accent)] focus:outline-none focus:ring-2 focus:ring-[var(--gym-accent-ring)]" required>
-              <option value="" disabled>Select...</option>
-              <option v-for="mop in options.mode_of_payments" :key="mop.name" :value="mop.name">{{ mop.name }}</option>
-            </select>
+            <div class="flex items-center gap-2">
+              <input v-model="form.time_slot_start" type="time" class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-[var(--gym-accent)] focus:outline-none focus:ring-2 focus:ring-[var(--gym-accent-ring)]" required />
+              <span class="shrink-0 text-xs text-slate-400">to</span>
+              <input v-model="form.time_slot_end" type="time" class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-[var(--gym-accent)] focus:outline-none focus:ring-2 focus:ring-[var(--gym-accent-ring)]" required />
+            </div>
           </Field>
 
           <Field label="Activation Date">
@@ -101,20 +98,6 @@
             <input v-model="form.invoice_reference" type="text" placeholder="Optional free-text reference to an external invoice/receipt" class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-[var(--gym-accent)] focus:outline-none focus:ring-2 focus:ring-[var(--gym-accent-ring)]" />
           </Field>
 
-          <Field label="Gym Services" class="sm:col-span-2">
-            <div class="flex flex-wrap gap-3">
-              <label v-for="s in options.gym_services" :key="s.name" class="flex items-center gap-1.5 text-sm text-slate-600">
-                <input type="checkbox" :value="s.name" v-model="form.gym_services" />
-                {{ s.service_name }}
-              </label>
-            </div>
-          </Field>
-
-          <label class="flex items-center gap-1.5 text-sm text-slate-600 sm:col-span-2">
-            <input type="checkbox" v-model="form.is_admission_fee" />
-            Include Admission Fee
-          </label>
-
           <p v-if="error" class="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700 sm:col-span-2">{{ error }}</p>
         </form>
 
@@ -148,7 +131,7 @@ import CreateMemberModal from '@/components/CreateMemberModal.vue';
 const emit = defineEmits(['close', 'created']);
 
 const options = ref({
-  members: [], membership_plans: [], membership_plan_types: [], gym_services: [], trainers: [], mode_of_payments: [],
+  members: [], membership_plans: [], membership_plan_types: [], trainers: [],
   companies: [], taxes_and_charges_templates: [], cost_centers: [],
 });
 const creating = ref(false);
@@ -157,12 +140,11 @@ const showCreateMember = ref(false);
 
 const form = reactive({
   member: '',
-  membership_plan: '', membership_plan_type: '', trainer: '', time_slot: '', mode_of_payment: '',
+  membership_plan: '', membership_plan_type: '', trainer: '', time_slot_start: '', time_slot_end: '',
   start_date: new Date().toISOString().slice(0, 10),
   date: new Date().toISOString().slice(0, 10),
   valid_number_of_days: '', number_of_service: 1,
   company: '', taxes_and_charges: '', cost_center: '', invoice_reference: '',
-  gym_services: [], is_admission_fee: false,
 });
 
 function cancel() {
@@ -202,11 +184,9 @@ async function submit() {
       membership_plan: form.membership_plan,
       membership_plan_type: form.membership_plan_type,
       trainer: form.trainer,
-      time_slot: form.time_slot,
-      mode_of_payment: form.mode_of_payment,
+      time_slot_start: form.time_slot_start,
+      time_slot_end: form.time_slot_end,
       start_date: form.start_date,
-      is_admission_fee: form.is_admission_fee ? 1 : 0,
-      gym_services: form.gym_services,
       company: form.company,
       date: form.date,
       valid_number_of_days: form.valid_number_of_days,

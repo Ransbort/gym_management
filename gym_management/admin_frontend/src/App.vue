@@ -8,6 +8,7 @@
       </main>
     </div>
     <SessionLockScreen v-if="auth.isLoggedIn" />
+    <ToastContainer />
   </div>
 </template>
 
@@ -17,6 +18,7 @@ import { useRoute } from 'vue-router';
 import TopBar from '@/components/TopBar.vue';
 import Sidebar from '@/components/Sidebar.vue';
 import SessionLockScreen from '@/components/SessionLockScreen.vue';
+import ToastContainer from '@/components/ToastContainer.vue';
 import { useAuthStore } from '@/stores/auth';
 import { useUiStore } from '@/stores/ui';
 import { flushPendingActions } from '@/offline/sync';

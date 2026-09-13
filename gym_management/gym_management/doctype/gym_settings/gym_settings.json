@@ -12,64 +12,69 @@
  "sort_order": "DESC",
  "track_changes": 0,
  "field_order": [
+  "tab_break_1",
   "section_break_1",
   "link_customer_to_gym_member",
-  "column_break_1",
-  "default_cost_center",
-  "default_payment_terms_template",
   "section_break_2",
   "membership_renewal_reminder_to_members",
-  "column_break_2",
+  "column_break_1",
   "enable_tax",
   "section_break_3",
   "default_gym_membership_item",
-  "column_break_3",
+  "column_break_2",
   "default_sales_taxes_and_charges_template",
   "section_break_4",
   "automate_membership_invoicing",
-  "column_break_4",
+  "column_break_3",
   "collect_fee_for_members_registration",
   "section_break_5",
   "link_gym_trainer_to_employee",
-  "column_break_5",
-  "registration_fee",
   "section_break_6",
   "default_customer_group",
-  "column_break_6",
+  "column_break_4",
   "default_valid_number_of_days",
   "section_break_7",
   "default_price_list",
-  "column_break_7",
-  "admission_fee_item",
   "section_break_8",
+  "bmi_underweight_max",
+  "column_break_5",
+  "bmi_normal_max",
+  "column_break_6",
+  "bmi_overweight_max",
+  "section_break_9",
+  "enable_diet_plans",
+  "column_break_7",
+  "enable_body_measurements",
+  "tab_break_2",
+  "section_break_10",
   "gym_name",
   "logo",
   "theme_color",
   "column_break_8",
   "gym_email",
   "gym_phone",
-  "section_break_9",
-  "address",
-  "section_break_10",
-  "bmi_underweight_max",
-  "column_break_9",
-  "bmi_normal_max",
-  "column_break_10",
-  "bmi_overweight_max",
   "section_break_11",
-  "enable_diet_plans",
-  "column_break_11",
-  "enable_body_measurements",
+  "address",
   "section_break_12",
-  "enable_paystack_payments",
-  "column_break_12",
-  "default_payment_gateway",
-  "section_break_13",
   "enable_session_lock",
-  "column_break_13",
-  "session_lock_timeout"
+  "column_break_9",
+  "session_lock_timeout",
+  "tab_break_3",
+  "section_break_13",
+  "enable_paystack_payments",
+  "column_break_10",
+  "default_payment_gateway",
+  "section_break_14",
+  "default_income_account",
+  "column_break_11",
+  "default_cost_center"
  ],
  "fields": [
+  {
+   "fieldname": "tab_break_1",
+   "fieldtype": "Tab Break",
+   "label": "General Settings"
+  },
   {
    "fieldname": "section_break_1",
    "fieldtype": "Section Break",
@@ -83,22 +88,6 @@
    "description": "If checked, a Customer will be created, mapped to Gym Members. Gym Member invoices will be created against this Customer. You can also select an existing Customer while creating a Gym Member."
   },
   {
-   "fieldname": "column_break_1",
-   "fieldtype": "Column Break"
-  },
-  {
-   "fieldname": "default_cost_center",
-   "fieldtype": "Link",
-   "label": "Default Cost Center",
-   "options": "Cost Center"
-  },
-  {
-   "fieldname": "default_payment_terms_template",
-   "fieldtype": "Link",
-   "label": "Default Payment Terms Template",
-   "options": "Payment Terms Template"
-  },
-  {
    "fieldname": "section_break_2",
    "fieldtype": "Section Break"
   },
@@ -108,7 +97,7 @@
    "label": "Membership Renewal Reminder To Members"
   },
   {
-   "fieldname": "column_break_2",
+   "fieldname": "column_break_1",
    "fieldtype": "Column Break"
   },
   {
@@ -128,7 +117,7 @@
    "options": "Item"
   },
   {
-   "fieldname": "column_break_3",
+   "fieldname": "column_break_2",
    "fieldtype": "Column Break"
   },
   {
@@ -150,7 +139,7 @@
    "description": "Manage Membership Invoice submit and cancel automatically for Gym Membership"
   },
   {
-   "fieldname": "column_break_4",
+   "fieldname": "column_break_3",
    "fieldtype": "Column Break"
   },
   {
@@ -172,16 +161,6 @@
    "description": "If checked, an Employee will be created, mapped to Gym Trainer. Gym Trainer Salary will be created against this Employee. You can also select an existing Employee while creating Gym Trainer."
   },
   {
-   "fieldname": "column_break_5",
-   "fieldtype": "Column Break"
-  },
-  {
-   "fieldname": "registration_fee",
-   "fieldtype": "Currency",
-   "label": "Registration Fee",
-   "reqd": 1
-  },
-  {
    "fieldname": "section_break_6",
    "fieldtype": "Section Break"
   },
@@ -193,7 +172,7 @@
    "reqd": 1
   },
   {
-   "fieldname": "column_break_6",
+   "fieldname": "column_break_4",
    "fieldtype": "Column Break"
   },
   {
@@ -215,18 +194,64 @@
    "reqd": 1
   },
   {
+   "fieldname": "section_break_8",
+   "fieldtype": "Section Break",
+   "label": "Body Measurement Ranges (BMI)"
+  },
+  {
+   "fieldname": "bmi_underweight_max",
+   "fieldtype": "Float",
+   "label": "Underweight up to",
+   "default": 18.5
+  },
+  {
+   "fieldname": "column_break_5",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "bmi_normal_max",
+   "fieldtype": "Float",
+   "label": "Normal up to",
+   "default": 24.9
+  },
+  {
+   "fieldname": "column_break_6",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "bmi_overweight_max",
+   "fieldtype": "Float",
+   "label": "Overweight up to (else Obese)",
+   "default": 29.9
+  },
+  {
+   "fieldname": "section_break_9",
+   "fieldtype": "Section Break",
+   "label": "Feature Toggles"
+  },
+  {
+   "fieldname": "enable_diet_plans",
+   "fieldtype": "Check",
+   "label": "Enable Diet Plans",
+   "default": 1
+  },
+  {
    "fieldname": "column_break_7",
    "fieldtype": "Column Break"
   },
   {
-   "fieldname": "admission_fee_item",
-   "fieldtype": "Link",
-   "label": "Admission Fee Item",
-   "options": "Item",
-   "reqd": 1
+   "fieldname": "enable_body_measurements",
+   "fieldtype": "Check",
+   "label": "Enable Body Measurements",
+   "default": 1
   },
   {
-   "fieldname": "section_break_8",
+   "fieldname": "tab_break_2",
+   "fieldtype": "Tab Break",
+   "label": "Gym Details"
+  },
+  {
+   "fieldname": "section_break_10",
    "fieldtype": "Section Break",
    "label": "Gym Details"
   },
@@ -265,7 +290,7 @@
    "options": "Phone"
   },
   {
-   "fieldname": "section_break_9",
+   "fieldname": "section_break_11",
    "fieldtype": "Section Break",
    "label": "Address"
   },
@@ -275,82 +300,7 @@
    "label": "Address"
   },
   {
-   "fieldname": "section_break_10",
-   "fieldtype": "Section Break",
-   "label": "Body Measurement Ranges (BMI)"
-  },
-  {
-   "fieldname": "bmi_underweight_max",
-   "fieldtype": "Float",
-   "label": "Underweight up to",
-   "default": 18.5
-  },
-  {
-   "fieldname": "column_break_9",
-   "fieldtype": "Column Break"
-  },
-  {
-   "fieldname": "bmi_normal_max",
-   "fieldtype": "Float",
-   "label": "Normal up to",
-   "default": 24.9
-  },
-  {
-   "fieldname": "column_break_10",
-   "fieldtype": "Column Break"
-  },
-  {
-   "fieldname": "bmi_overweight_max",
-   "fieldtype": "Float",
-   "label": "Overweight up to (else Obese)",
-   "default": 29.9
-  },
-  {
-   "fieldname": "section_break_11",
-   "fieldtype": "Section Break",
-   "label": "Feature Toggles"
-  },
-  {
-   "fieldname": "enable_diet_plans",
-   "fieldtype": "Check",
-   "label": "Enable Diet Plans",
-   "default": 1
-  },
-  {
-   "fieldname": "column_break_11",
-   "fieldtype": "Column Break"
-  },
-  {
-   "fieldname": "enable_body_measurements",
-   "fieldtype": "Check",
-   "label": "Enable Body Measurements",
-   "default": 1
-  },
-  {
    "fieldname": "section_break_12",
-   "fieldtype": "Section Break",
-   "label": "Payments"
-  },
-  {
-   "fieldname": "enable_paystack_payments",
-   "fieldtype": "Check",
-   "label": "Enable Paystack Payments",
-   "default": 0,
-   "description": "Master switch for Memberships > Send Payment Link in the Gym Admin dashboard. Off by default even if Paystack is installed. Also requires a matching, enabled Paystack Gateway Setting record (from the separately installed frappe_paystack app) for the membership's Company - this switch only controls whether the dashboard will try, not whether Paystack itself is configured correctly."
-  },
-  {
-   "fieldname": "column_break_12",
-   "fieldtype": "Column Break"
-  },
-  {
-   "fieldname": "default_payment_gateway",
-   "fieldtype": "Link",
-   "label": "Default Payment Gateway",
-   "options": "Payment Gateway",
-   "description": "e.g. your Paystack Gateway Setting record. Informational only, same as sports_complex's own field of the same name (neither app reads it back in code) - the actual gateway lookup at payment time is frappe_paystack's own Paystack Gateway Setting, matched by Company."
-  },
-  {
-   "fieldname": "section_break_13",
    "fieldtype": "Section Break",
    "label": "Security"
   },
@@ -362,7 +312,7 @@
    "description": "Lock the Gym Admin screen after a period of inactivity or when the browser tab loses focus."
   },
   {
-   "fieldname": "column_break_13",
+   "fieldname": "column_break_9",
    "fieldtype": "Column Break"
   },
   {
@@ -371,6 +321,53 @@
    "label": "Session Lock Timeout (minutes)",
    "default": 5,
    "depends_on": "eval:doc.enable_session_lock"
+  },
+  {
+   "fieldname": "tab_break_3",
+   "fieldtype": "Tab Break",
+   "label": "Payments and Accounts"
+  },
+  {
+   "fieldname": "section_break_13",
+   "fieldtype": "Section Break",
+   "label": "Paystack"
+  },
+  {
+   "fieldname": "enable_paystack_payments",
+   "fieldtype": "Check",
+   "label": "Enable Paystack Payments",
+   "default": 0
+  },
+  {
+   "fieldname": "column_break_10",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "default_payment_gateway",
+   "fieldtype": "Link",
+   "label": "Default Payment Gateway",
+   "options": "Payment Gateway"
+  },
+  {
+   "fieldname": "section_break_14",
+   "fieldtype": "Section Break",
+   "label": "Accounts"
+  },
+  {
+   "fieldname": "default_income_account",
+   "fieldtype": "Link",
+   "label": "Default Income Account",
+   "options": "Account"
+  },
+  {
+   "fieldname": "column_break_11",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "default_cost_center",
+   "fieldtype": "Link",
+   "label": "Default Cost Center",
+   "options": "Cost Center"
   }
  ],
  "permissions": [

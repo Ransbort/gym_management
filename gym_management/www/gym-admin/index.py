@@ -6,11 +6,10 @@ modelled on POSNext's /pos: front-desk check-in, an operational overview,
 and membership & payments, all client-side via Vue Router once this shell
 has loaded.
 
-Same no-server-login-gate pattern as www/gym-portal/index.py: a Guest still
-needs this shell to load so the SPA can render its own Login page
-client-side, and every actual data call in admin_api.py enforces its own
-_check_staff() role check (System Manager / Gym Manager / Gym Staff) before
-touching anything.
+Deliberately no login gate here: a Guest still needs this shell to load so
+the SPA can render its own Login page client-side, and every actual data
+call in admin_api.py enforces its own _check_staff() role check (System
+Manager / Gym Manager / Gym Staff) before touching anything.
 """
 
 from urllib.parse import quote

@@ -16,6 +16,7 @@ def after_install():
 	create_roles()
 	sync_workspace_sidebars()
 	ensure_dashboard_widgets()
+	ensure_payment_gateway()
 
 
 def after_migrate():
@@ -23,6 +24,7 @@ def after_migrate():
 	sync_workspace_sidebars()
 	remove_retired_erpnext_stand_in_doctypes()
 	ensure_dashboard_widgets()
+	ensure_payment_gateway()
 
 
 def create_roles():
@@ -42,6 +44,32 @@ def create_roles():
 		role.desk_access = 0
 		role.flags.ignore_permissions = True
 		role.insert(ignore_permissions=True)
+
+
+def ensure_payment_gateway():
+	"""Creates a "Payment Gateway" record named "Paystack" if one doesn't
+	already exist, so Gym Settings > Payments > Default Payment Gateway has
+	something to pick without a trip to Desk first - otherwise that
+	dropdown is empty on every site until someone creates one by hand.
+	frappe_paystack (a separately installed third-party app) doesn't
+	participate in Frappe's core Payment Gateway framework at all (it
+	matches its own Paystack Gateway Setting by Company instead - see
+	Gym Settings.validate_paystack_settings()), so this record is purely a
+	convenience default for that dropdown, not something any payment logic
+	reads back. Guarded with a DocType existence check since "Payment
+	Gateway" isn't a doctype gym_management itself owns.
+	"""
+	if not frappe.db.exists("DocType", "Payment Gateway"):
+		return
+	if frappe.db.exists("Payment Gateway", {"gateway": "Paystack"}):
+		return
+	try:
+		gateway = frappe.new_doc("Payment Gateway")
+		gateway.gateway = "Paystack"
+		gateway.flags.ignore_permissions = True
+		gateway.insert(ignore_permissions=True)
+	except Exception:
+		frappe.log_error("Failed to create default Payment Gateway record", "Gym Management install")
 
 
 def sync_workspace_sidebars():

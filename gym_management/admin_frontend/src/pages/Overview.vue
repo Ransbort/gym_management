@@ -18,18 +18,21 @@
       </div>
     </div>
 
-    <p v-if="flash" :class="['mb-4 rounded-lg px-3 py-2 text-sm', flashError ? 'bg-red-50 text-red-700' : 'bg-emerald-50 text-emerald-700']">
-      {{ flash }}
-    </p>
-
     <p v-if="loading && !data" class="text-slate-500">Loading...</p>
 
     <template v-else-if="data">
-      <div class="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
-        <StatCard label="Active Members" :value="data.stats.active_members" icon="bi-people" />
-        <StatCard label="Total Members" :value="data.stats.total_members" icon="bi-person-lines-fill" />
-        <StatCard label="Checked In Now" :value="data.stats.checked_in_now" icon="bi-door-open" accent />
-        <StatCard label="Today's Check-Ins" :value="data.stats.todays_checkins" icon="bi-clock-history" />
+      <div class="grid grid-cols-4 gap-4">
+        <DualStatCard
+          icon="bi-people"
+          :first="{ value: data.stats.active_members, label: 'Active' }"
+          :second="{ value: data.stats.total_members, label: 'Total Members' }"
+        />
+        <DualStatCard
+          icon="bi-door-open"
+          accent
+          :first="{ value: data.stats.checked_in_now, label: 'Checked In Now' }"
+          :second="{ value: data.stats.todays_checkins, label: 'Today\'s Check-Ins' }"
+        />
         <StatCard label="Expiring (7 days)" :value="data.stats.expiring_soon" icon="bi-exclamation-triangle" warn />
         <StatCard label="Today's Revenue" :value="formatCurrency(data.stats.todays_revenue)" icon="bi-cash-coin" />
       </div>
@@ -84,24 +87,16 @@ const data = ref(null);
 const loading = ref(true);
 const showCreateMember = ref(false);
 const showCreateMembership = ref(false);
-const flash = ref('');
-const flashError = ref(false);
-
-function showFlash(message, isError) {
-  flash.value = message;
-  flashError.value = !!isError;
-  setTimeout(() => { if (flash.value === message) flash.value = ''; }, 4000);
-}
 
 function onMemberCreated(member) {
   showCreateMember.value = false;
-  showFlash(`${member.member_name} created.`, false);
+  ui.showToast(`${member.member_name} created.`);
   load();
 }
 
 function onMembershipCreated(membership) {
   showCreateMembership.value = false;
-  showFlash('Membership created.', false);
+  ui.showToast('Membership created.');
   load();
 }
 
@@ -143,6 +138,39 @@ const StatCard = {
       }, [h('i', { class: ['bi', this.icon] })]),
       h('div', { class: 'text-2xl font-bold text-slate-900' }, String(this.value)),
       h('div', { class: 'text-xs text-slate-500' }, this.label),
+    ]);
+  },
+};
+
+// Two related metrics (Active/Total members, Checked-in-now/Today's
+// check-ins) sharing one card instead of two - same icon-badge-then-numbers
+// shape as StatCard above, just with a second value+label pair split off by
+// a vertical divider instead of a single value.
+const DualStatCard = {
+  props: {
+    icon: String,
+    accent: Boolean,
+    warn: Boolean,
+    first: { type: Object, required: true },
+    second: { type: Object, required: true },
+  },
+  render() {
+    const stat = (s) => h('div', { class: 'min-w-0' }, [
+      h('div', { class: 'text-2xl font-bold text-slate-900' }, String(s.value)),
+      h('div', { class: 'truncate text-xs text-slate-500' }, s.label),
+    ]);
+    return h('div', { class: 'rounded-xl border border-slate-200 bg-white p-4' }, [
+      h('div', {
+        class: [
+          'mb-2 flex h-8 w-8 items-center justify-center rounded-lg text-sm',
+          this.warn ? 'bg-amber-50 text-amber-600' : this.accent ? 'bg-[var(--gym-accent-tint)] text-[var(--gym-accent)]' : 'bg-slate-100 text-slate-500',
+        ],
+      }, [h('i', { class: ['bi', this.icon] })]),
+      h('div', { class: 'flex items-center gap-3' }, [
+        stat(this.first),
+        h('div', { class: 'h-8 w-px shrink-0 bg-slate-200' }),
+        stat(this.second),
+      ]),
     ]);
   },
 };

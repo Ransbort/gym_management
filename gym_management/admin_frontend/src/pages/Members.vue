@@ -12,12 +12,8 @@
         </button>
       </div>
 
-      <p v-if="flash" :class="['mb-3 rounded-lg px-3 py-2 text-sm', flashError ? 'bg-red-50 text-red-700' : 'bg-emerald-50 text-emerald-700']">
-        {{ flash }}
-      </p>
-
       <div class="mb-3 flex gap-2">
-        <input v-model="listQuery" type="text" placeholder="Search members by name, phone or email..." class="flex-1 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-[var(--gym-accent)] focus:outline-none focus:ring-2 focus:ring-[var(--gym-accent-ring)]" @input="debouncedList" />
+        <input v-model="listQuery" type="text" placeholder="Search members by name, phone or email..." class="w-full max-w-sm rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-[var(--gym-accent)] focus:outline-none focus:ring-2 focus:ring-[var(--gym-accent-ring)]" @input="debouncedList" />
         <select v-model="listStatus" class="w-44 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-[var(--gym-accent)] focus:outline-none focus:ring-2 focus:ring-[var(--gym-accent-ring)]" @change="loadList">
           <option value="">All statuses</option>
           <option v-for="s in ['Active', 'Expired', 'Suspended', 'Cancelled', 'No Membership']" :key="s" :value="s">{{ s }}</option>
@@ -39,8 +35,8 @@
           </thead>
           <tbody>
             <tr v-for="m in members" :key="m.name"
-              class="cursor-pointer border-b border-slate-100 text-slate-700 hover:bg-slate-50"
-              :class="{ 'bg-slate-100': selected && selected.member.name === m.name }"
+              class="cursor-pointer border-b border-slate-100 border-l-4 border-l-transparent text-slate-700 hover:bg-slate-50"
+              :class="{ '!border-l-[var(--gym-accent)] !bg-[var(--gym-accent-tint)]': selected && selected.member.name === m.name }"
               @click="selectMember(m.name)">
               <td class="px-4 py-2">
                 <div class="flex items-center gap-2">
@@ -113,6 +109,57 @@
             </li>
           </ul>
         </div>
+
+        <!-- Fitness & Nutrition - mirrors the same-named dashboard group on
+             Gym Member's own Desk form (generate.py's dashboard_links), so
+             staff can add/view these without leaving the dashboard. -->
+        <div class="mt-4 border-t border-slate-200 pt-3">
+          <div class="mb-2 flex items-center justify-between">
+            <h3 class="text-xs font-semibold text-slate-600">Body Measurements</h3>
+            <button type="button" class="flex h-5 w-5 items-center justify-center rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200" title="Add Body Measurement" @click="showAddMeasurement = true">
+              <i class="bi bi-plus text-sm"></i>
+            </button>
+          </div>
+          <p v-if="!selected.body_measurements.length" class="text-xs text-slate-500">No measurements recorded yet.</p>
+          <ul v-else class="space-y-1.5 text-xs">
+            <li v-for="bm in selected.body_measurements" :key="bm.name" class="flex items-center justify-between gap-2 text-slate-600">
+              <span class="truncate">{{ bm.measurement_date }} &middot; {{ bm.weight_kg }}kg &middot; BMI {{ bm.bmi || '-' }}</span>
+              <span class="shrink-0 font-semibold text-slate-500">{{ bm.weight_status || '-' }}</span>
+            </li>
+          </ul>
+        </div>
+
+        <div class="mt-4 border-t border-slate-200 pt-3">
+          <div class="mb-2 flex items-center justify-between">
+            <h3 class="text-xs font-semibold text-slate-600">Assigned Workout Plans</h3>
+            <button type="button" class="flex h-5 w-5 items-center justify-center rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200" title="Assign Workout Plan" @click="showAssignWorkout = true">
+              <i class="bi bi-plus text-sm"></i>
+            </button>
+          </div>
+          <p v-if="!selected.assigned_workout_plans.length" class="text-xs text-slate-500">No workout plans assigned yet.</p>
+          <ul v-else class="space-y-1.5 text-xs">
+            <li v-for="wp in selected.assigned_workout_plans" :key="wp.name" class="flex items-center justify-between gap-2 text-slate-600">
+              <span class="truncate">{{ wp.workout_plan || 'Custom plan' }} &middot; {{ wp.start_date }}</span>
+              <span class="shrink-0 font-semibold" :class="wp.status === 'Active' ? 'text-emerald-600' : 'text-slate-400'">{{ wp.status }}</span>
+            </li>
+          </ul>
+        </div>
+
+        <div class="mt-4 border-t border-slate-200 pt-3">
+          <div class="mb-2 flex items-center justify-between">
+            <h3 class="text-xs font-semibold text-slate-600">Assigned Diet Plans</h3>
+            <button type="button" class="flex h-5 w-5 items-center justify-center rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200" title="Assign Diet Plan" @click="showAssignDiet = true">
+              <i class="bi bi-plus text-sm"></i>
+            </button>
+          </div>
+          <p v-if="!selected.assigned_diet_plans.length" class="text-xs text-slate-500">No diet plans assigned yet.</p>
+          <ul v-else class="space-y-1.5 text-xs">
+            <li v-for="dp in selected.assigned_diet_plans" :key="dp.name" class="flex items-center justify-between gap-2 text-slate-600">
+              <span class="truncate">{{ dp.diet_plan || 'Custom plan' }} &middot; {{ dp.start_date }}</span>
+              <span class="shrink-0 font-semibold" :class="dp.status === 'Active' ? 'text-emerald-600' : 'text-slate-400'">{{ dp.status }}</span>
+            </li>
+          </ul>
+        </div>
       </div>
     </section>
 
@@ -121,6 +168,27 @@
       @close="showCreateMember = false"
       @created="onMemberCreated"
     />
+
+    <AddBodyMeasurementModal
+      v-if="showAddMeasurement"
+      :member="selected.member.name"
+      @close="showAddMeasurement = false"
+      @created="onMeasurementCreated"
+    />
+
+    <AssignWorkoutPlanModal
+      v-if="showAssignWorkout"
+      :member="selected.member.name"
+      @close="showAssignWorkout = false"
+      @created="onWorkoutPlanAssigned"
+    />
+
+    <AssignDietPlanModal
+      v-if="showAssignDiet"
+      :member="selected.member.name"
+      @close="showAssignDiet = false"
+      @created="onDietPlanAssigned"
+    />
   </div>
 </template>
 
@@ -128,6 +196,9 @@
 import { onMounted, ref, watch } from 'vue';
 import { call, firstServerMessage } from '@/api/frappe';
 import CreateMemberModal from '@/components/CreateMemberModal.vue';
+import AddBodyMeasurementModal from '@/components/AddBodyMeasurementModal.vue';
+import AssignWorkoutPlanModal from '@/components/AssignWorkoutPlanModal.vue';
+import AssignDietPlanModal from '@/components/AssignDietPlanModal.vue';
 import { useUiStore } from '@/stores/ui';
 
 const ui = useUiStore();
@@ -138,15 +209,10 @@ const listStatus = ref('');
 const listLoading = ref(true);
 const selected = ref(null);
 const showCreateMember = ref(false);
-const flash = ref('');
-const flashError = ref(false);
+const showAddMeasurement = ref(false);
+const showAssignWorkout = ref(false);
+const showAssignDiet = ref(false);
 let listTimer = null;
-
-function showFlash(message, isError) {
-  flash.value = message;
-  flashError.value = !!isError;
-  setTimeout(() => { if (flash.value === message) flash.value = ''; }, 4000);
-}
 
 function memberInitials(name) {
   const parts = (name || '').trim().split(/\s+/).filter(Boolean);
@@ -159,7 +225,7 @@ async function loadList() {
   try {
     members.value = await call('gym_management.admin_api.list_members', { query: listQuery.value, status: listStatus.value });
   } catch (err) {
-    showFlash(firstServerMessage(err) || 'Could not load members.', true);
+    ui.showToast(firstServerMessage(err) || 'Could not load members.', 'error');
   } finally {
     listLoading.value = false;
   }
@@ -173,14 +239,32 @@ async function selectMember(name) {
   try {
     selected.value = await call('gym_management.admin_api.get_member', { name });
   } catch (err) {
-    showFlash(firstServerMessage(err) || 'Could not load this member.', true);
+    ui.showToast(firstServerMessage(err) || 'Could not load this member.', 'error');
   }
 }
 
 function onMemberCreated(member) {
   showCreateMember.value = false;
-  showFlash(`${member.member_name} created.`, false);
+  ui.showToast(`${member.member_name} created.`);
   loadList();
+}
+
+function onMeasurementCreated() {
+  showAddMeasurement.value = false;
+  ui.showToast('Measurement saved.');
+  if (selected.value) selectMember(selected.value.member.name);
+}
+
+function onWorkoutPlanAssigned() {
+  showAssignWorkout.value = false;
+  ui.showToast('Workout plan assigned.');
+  if (selected.value) selectMember(selected.value.member.name);
+}
+
+function onDietPlanAssigned() {
+  showAssignDiet.value = false;
+  ui.showToast('Diet plan assigned.');
+  if (selected.value) selectMember(selected.value.member.name);
 }
 
 onMounted(loadList);

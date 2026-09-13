@@ -25,10 +25,19 @@
   "sessions_used",
   "sessions_remaining",
   "section_break_2",
+  "company",
   "amount",
   "column_break_3",
+  "paid_amount",
+  "outstanding_amount",
+  "section_break_3",
   "payment_status",
-  "invoice_reference"
+  "column_break_4",
+  "invoice_reference",
+  "section_break_4",
+  "customer",
+  "currency",
+  "conversion_rate"
  ],
  "fields": [
   {
@@ -117,6 +126,13 @@
    "label": "Billing"
   },
   {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Company",
+   "options": "Company",
+   "reqd": 1
+  },
+  {
    "fieldname": "amount",
    "fieldtype": "Currency",
    "label": "Amount"
@@ -126,16 +142,75 @@
    "fieldtype": "Column Break"
   },
   {
+   "fieldname": "paid_amount",
+   "fieldtype": "Currency",
+   "label": "Paid Amount",
+   "read_only": 1,
+   "description": "Only ever moved by a real PT Payment record (see collect_pt_payment()), same audit-trail pattern as Gym Membership.paid_amount."
+  },
+  {
+   "fieldname": "outstanding_amount",
+   "fieldtype": "Currency",
+   "label": "Outstanding Amount",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_break_3",
+   "fieldtype": "Section Break"
+  },
+  {
    "fieldname": "payment_status",
    "fieldtype": "Select",
    "label": "Payment Status",
    "options": "Unpaid\nPartially Paid\nPaid",
-   "default": "Unpaid"
+   "default": "Unpaid",
+   "read_only": 1,
+   "in_list_view": 1,
+   "description": "Computed from Paid Amount on every save - see calculate_payment_status(). No longer directly settable (a PT Payment record is what actually moves it)."
+  },
+  {
+   "fieldname": "column_break_4",
+   "fieldtype": "Column Break"
   },
   {
    "fieldname": "invoice_reference",
    "fieldtype": "Data",
    "label": "Invoice Reference"
+  },
+  {
+   "fieldname": "section_break_4",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "customer",
+   "fieldtype": "Link",
+   "label": "Customer",
+   "options": "Customer",
+   "hidden": 1,
+   "print_hide": 1,
+   "fetch_from": "member.customer",
+   "read_only": 1,
+   "description": "Mirrors the member's own Customer (Gym Member > Accounting), if one is linked. Set explicitly by create_pt_purchase() (fetch_from is Desk-JS only). Needed for frappe_paystack's PaystackPaymentLog.get_data(), same reason as Gym Membership.customer."
+  },
+  {
+   "fieldname": "currency",
+   "fieldtype": "Link",
+   "label": "Currency",
+   "options": "Currency",
+   "hidden": 1,
+   "print_hide": 1,
+   "fetch_from": "company.default_currency",
+   "read_only": 1,
+   "description": "Set explicitly by create_pt_purchase() from the Company's default currency - same story as Gym Membership.currency."
+  },
+  {
+   "fieldname": "conversion_rate",
+   "fieldtype": "Float",
+   "label": "Conversion Rate",
+   "default": 1,
+   "hidden": 1,
+   "print_hide": 1,
+   "description": "Always 1 here (single-currency). Exists only because frappe_paystack's PaystackPaymentLog.get_data() multiplies amount by <linked doc>.conversion_rate - same story as Gym Membership.conversion_rate."
   }
  ],
  "autoname": "naming_series:",

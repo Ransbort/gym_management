@@ -1,8 +1,9 @@
 # Copyright (c) 2026, Ransford Borketey and contributors
 # For license information, please see license.txt
 
-"""Reconciliation half of the Gym Membership <-> Paystack integration (the
-"generate a payment link" half lives in admin_api.py's send_payment_link()).
+"""Reconciliation half of the Gym Membership / PT Package Purchase <->
+Paystack integration (the "generate a payment link" half lives in
+admin_api.py's send_payment_link() / send_pt_payment_link()).
 
 frappe_paystack (a separately installed third-party app, not part of
 gym_management) confirms a payment by saving its own Paystack Payment Log
@@ -11,17 +12,19 @@ checkout page's synchronous verify_transaction() fallback. Its own
 on_update() then tries to auto-reconcile by creating an ERPNext Payment
 Entry, reading things like <linked doc>.customer/.debit_to/.conversion_rate
 the way a Sales Invoice/Sales Order would have them - none of which describe
-a Gym Membership the same way, so that attempt raises and is silently
-swallowed by its own broad `except Exception` (logged via frappe.log_error,
-otherwise a no-op: harmless, but useless to us).
+a Gym Membership or PT Package Purchase the same way, so that attempt raises
+and is silently swallowed by its own broad `except Exception` (logged via
+frappe.log_error, otherwise a no-op: harmless, but useless to us).
 
-This module does the real reconciliation for Gym Membership instead: wired
-up in hooks.py's doc_events under "Paystack Payment Log": {"on_update": ...},
-it turns a paid log into a real Gym Membership Payment record through the
-exact same insert() (and therefore the same apply_to_membership() paid_amount/
-status recompute) admin_api.py's own collect_payment() uses for a manual
-front-desk payment - so a Paystack payment and a cash payment end up
-indistinguishable in Gym Membership's own payment history.
+This module does the real reconciliation instead, for both linked doctypes:
+wired up in hooks.py's doc_events under "Paystack Payment Log":
+{"on_update": [...]}, each function below turns a paid log into a real
+payment record (Gym Membership Payment / PT Payment) through the exact same
+insert() (and therefore the same apply_to_membership()/apply_to_purchase()
+paid_amount/status recompute) admin_api.py's own collect_payment()/
+collect_pt_payment() use for a manual front-desk payment - so a Paystack
+payment and a cash payment end up indistinguishable in either doctype's own
+payment history.
 """
 
 import frappe
@@ -33,7 +36,7 @@ def sync_gym_membership_payment(doc, method=None):
 	a Gym Membership whose payment has actually gone through.
 	"""
 	try:
-		_sync(doc)
+		_sync_gym_membership(doc)
 	except Exception:
 		# Mirrors frappe_paystack's own on_update() - never let a
 		# reconciliation bug take down the webhook response or the
@@ -44,7 +47,7 @@ def sync_gym_membership_payment(doc, method=None):
 		)
 
 
-def _sync(doc):
+def _sync_gym_membership(doc):
 	if doc.linked_doctype != "Gym Membership" or not doc.linked_docname:
 		return
 	if doc.status not in ("Processed", "Completed"):
@@ -73,6 +76,53 @@ def _sync(doc):
 	try:
 		payment = frappe.new_doc("Gym Membership Payment")
 		payment.gym_membership = doc.linked_docname
+		payment.amount = flt(doc.amount_paid)
+		payment.mode_of_payment = mode_of_payment
+		payment.payment_date = doc.payment_date or nowdate()
+		payment.reference_no = doc.name
+		payment.remarks = f"Paystack payment - {doc.payment_reference or doc.transaction_id or doc.name}"
+		payment.flags.ignore_permissions = True
+		payment.insert(ignore_permissions=True)
+		frappe.db.commit()
+	finally:
+		frappe.set_user("Guest")
+
+
+def sync_pt_purchase_payment(doc, method=None):
+	"""doc is a Paystack Payment Log (on_update). Only acts on logs linked to
+	a PT Package Purchase whose payment has actually gone through. Sibling of
+	sync_gym_membership_payment() above - see this module's own docstring.
+	"""
+	try:
+		_sync_pt_purchase(doc)
+	except Exception:
+		frappe.log_error(
+			f"Failed to reconcile Paystack Payment Log {doc.name} to a PT Payment",
+			"Gym Management Paystack sync",
+		)
+
+
+def _sync_pt_purchase(doc):
+	if doc.linked_doctype != "PT Package Purchase" or not doc.linked_docname:
+		return
+	if doc.status not in ("Processed", "Completed"):
+		return
+	if not flt(doc.amount_paid):
+		return
+	if not frappe.db.exists("PT Package Purchase", doc.linked_docname):
+		return
+	# Same idempotency guard as _sync_gym_membership() above.
+	if frappe.db.exists("PT Payment", {"reference_no": doc.name}):
+		return
+
+	mode_of_payment = frappe.db.get_value(
+		"Paystack Gateway Setting", {"enabled": 1, "company": doc.company}, "mode_of_payment"
+	) or "Paystack"
+
+	frappe.set_user("Administrator")
+	try:
+		payment = frappe.new_doc("PT Payment")
+		payment.pt_package_purchase = doc.linked_docname
 		payment.amount = flt(doc.amount_paid)
 		payment.mode_of_payment = mode_of_payment
 		payment.payment_date = doc.payment_date or nowdate()

@@ -29,3 +29,24 @@ export function firstServerMessage(err) {
     return '';
   }
 }
+
+// frappe.call() only ever does JSON RPC - Frappe's own file upload endpoint
+// (/api/method/upload_file) takes multipart/form-data instead, so this is a
+// plain fetch() rather than a call() wrapper. Used by CreateMemberModal.vue's
+// Photo field: upload first to get a file_url, then pass that URL along with
+// the rest of the form to create_member() - the same two-step every Frappe
+// Attach control does under the hood.
+export function uploadFile(file, { isPrivate = false } = {}) {
+  const formData = new FormData();
+  formData.append('file', file, file.name);
+  formData.append('is_private', isPrivate ? 1 : 0);
+  return fetch('/api/method/upload_file', {
+    method: 'POST',
+    headers: { 'X-Frappe-CSRF-Token': window.frappe.csrf_token },
+    body: formData,
+  }).then(async (res) => {
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw data;
+    return data.message;
+  });
+}

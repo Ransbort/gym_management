@@ -1,11 +1,10 @@
 // Copyright (c) 2026, Ransford Borketey and contributors
 // For license information, please see license.txt
 //
-// Desk "Trainer" page - the Desk-side equivalent of the website Trainer
-// dashboard (www/gym-portal/trainer.*). A Gym Trainer signs into the Desk
-// and works from here instead of the website portal; Gym Staff/Gym
-// Manager/System Manager get a Trainer picker so they can look at (and
-// check members in/out for) any trainer, not just their own.
+// Desk "Trainer" page. A Gym Trainer signs into the Desk and works from
+// here; Gym Staff/Gym Manager/System Manager get a Trainer picker so they
+// can look at (and check members in/out for) any trainer, not just their
+// own.
 
 frappe.pages['trainer'].on_page_load = function (wrapper) {
 	let page = frappe.ui.make_app_page({

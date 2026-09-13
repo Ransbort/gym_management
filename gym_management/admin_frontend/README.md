@@ -6,17 +6,15 @@ Vue 3 + Vite + Vue Router + Pinia, `frappe-ui` components, an IndexedDB
 (Dexie) offline queue, a Socket.IO realtime connection, and a
 `vite-plugin-pwa` service worker + install manifest.
 
-This is a **separate** SPA from `../frontend` (the member/trainer Gym
-Portal at `/gym-portal`) - different audience (Desk-capable staff vs.
-website members/trainers), different route, different build output
-(`public/admin` vs `public/portal`).
+This is the only web frontend in gym_management - the old member/trainer
+self-service Gym Portal (`/gym-portal`, formerly `../frontend`) has been
+retired now that the team has fully migrated onto this dashboard.
 
 ## Architecture
 
 - `vite.config.js` builds straight into `../public/admin`
   (`/assets/gym_management/admin/...`) with fixed, non-hashed asset
-  filenames (`assets/main.js` / `assets/main.css`), same reasoning as
-  `../frontend/vite.config.js`.
+  filenames (`assets/main.js` / `assets/main.css`).
 - `../www/gym-admin/index.py` + `index.html` is the served shell: a
   hand-authored Jinja template (not Vite's own built `index.html`) that
   extends `templates/web.html`, suppresses the site's own navbar/footer,
@@ -99,10 +97,9 @@ npm run build
 ```
 
 No compatible pre-built `node_modules` exists elsewhere in this repo for
-this dependency set (unlike `../frontend`, which could borrow
-`sports_complex/frontend/node_modules`) - `frappe-ui`, `dexie`,
-`vite-plugin-pwa`, `workbox-*` and `socket.io-client` are new to this app,
-so `npm install` needs real registry access.
+this dependency set - `frappe-ui`, `dexie`, `vite-plugin-pwa`, `workbox-*`
+and `socket.io-client` are new to this app, so `npm install` needs real
+registry access.
 
 If you're building this over a mounted/network filesystem (e.g. a
 Windows folder bridged into a Linux VM), don't run `npm install`

@@ -40,5 +40,6 @@ const items = [
   { name: 'CheckIn', to: '/checkin', icon: 'bi-door-open', label: 'Check-In' },
   { name: 'Members', to: '/members', icon: 'bi-people', label: 'Members' },
   { name: 'Memberships', to: '/memberships', icon: 'bi-credit-card', label: 'Memberships' },
+  { name: 'PersonalTraining', to: '/personal-training', icon: 'bi-stopwatch', label: 'Personal Training' },
 ];
 </script>

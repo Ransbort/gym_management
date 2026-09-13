@@ -20,4 +20,8 @@ class MembershipRenewal(Document):
 		membership.end_date = self.new_end_date
 		membership.status = "Active"
 		membership.flags.ignore_permissions = True
+		# Same reasoning as Gym Membership Payment's apply_to_membership():
+		# a renewal shouldn't be blocked by an older membership row missing
+		# fields (e.g. Time Slot Start/End) that postdate it.
+		membership.flags.ignore_mandatory = True
 		membership.save()
