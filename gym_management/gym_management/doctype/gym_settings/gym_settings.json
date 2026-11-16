@@ -21,6 +21,7 @@
   "enable_tax",
   "section_break_3",
   "default_gym_membership_item",
+  "default_pt_package_item",
   "column_break_2",
   "default_sales_taxes_and_charges_template",
   "section_break_4",
@@ -114,6 +115,13 @@
    "fieldname": "default_gym_membership_item",
    "fieldtype": "Link",
    "label": "Default Gym Membership Item",
+   "options": "Item"
+  },
+  {
+   "description": "Billable Item used when a doctor-requested PT Package is invoiced to the Cashier Portal.",
+   "fieldname": "default_pt_package_item",
+   "fieldtype": "Link",
+   "label": "Default PT Package Item",
    "options": "Item"
   },
   {
@@ -402,5 +410,6 @@
    "print": 1,
    "report": 1
   }
- ]
+ ],
+ "modified": "2026-11-16 12:00:00.000000"
 }

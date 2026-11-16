@@ -1003,6 +1003,15 @@ def collect_payment(gym_membership, amount, mode_of_payment, payment_type="Payme
 	validate() rejects a refund larger than what's actually been paid.
 	"""
 	_check_staff()
+	# Doctor-requested memberships are billed by a hospital Sales Invoice -
+	# pay that instead (see healthcare_requests.route_payment_to_invoice).
+	from gym_management.healthcare_requests import route_payment_to_invoice
+
+	routed = route_payment_to_invoice(
+		"Gym Membership", gym_membership, amount, mode_of_payment, payment_type, reference_no, remarks
+	)
+	if routed:
+		return routed
 	payment = frappe.new_doc("Gym Membership Payment")
 	payment.gym_membership = gym_membership
 	payment.payment_type = payment_type
@@ -1219,6 +1228,94 @@ def create_pt_purchase(member, pt_package, purchase_date=None, amount=None, comp
 	return purchase.as_dict()
 
 
+def _attach_workout_plan_labels(assigned_workout_plans, sessions):
+	"""Builds a human-readable label ("<template plan name>" or "Custom" for
+	a templateless assignment, plus its own status) for each of a member's
+	Assigned Workout Plan rows - used both for the Log Session form's own
+	"Workout Plan" dropdown (assigned_workout_plans, mutated with a `label`
+	key) and for each already-logged PT Session that references one
+	(sessions, mutated with a `workout_plan_label` key). Mirrors
+	_attach_member_names()'s own bulk-resolve-then-map shape.
+	"""
+	plan_names = {p.workout_plan for p in assigned_workout_plans if p.workout_plan}
+	plan_titles = {}
+	if plan_names:
+		plan_titles = {
+			p.name: p.plan_name
+			for p in frappe.get_all("Workout Plan", filters={"name": ["in", list(plan_names)]}, fields=["name", "plan_name"])
+		}
+	label_by_awp = {}
+	for p in assigned_workout_plans:
+		title = plan_titles.get(p.workout_plan) or "Custom"
+		p["label"] = f"{title} ({p.status})"
+		label_by_awp[p.name] = title
+	for s in sessions:
+		if s.get("assigned_workout_plan"):
+			s["workout_plan_label"] = label_by_awp.get(s["assigned_workout_plan"])
+
+
+def _attach_workout_plan_exercises(assigned_workout_plans):
+	"""Attaches an `exercises` list (each row: exercise_name, sets, reps,
+	rest_seconds, notes) to every row in assigned_workout_plans, pulled from
+	that assignment's own Workout Configuration child table - so the Log
+	Session form can show what the plan actually calls for right under the
+	picker, instead of just its name. Bulk-fetches the child rows for every
+	plan at once (one query) plus the Exercise names they reference (a
+	second query), same bulk-resolve-then-map shape as the label helpers
+	above.
+	"""
+	plan_ids = [p.name for p in assigned_workout_plans]
+	if not plan_ids:
+		return
+	rows = frappe.get_all(
+		"Workout Configuration",
+		filters={"parenttype": "Assigned Workout Plan", "parent": ["in", plan_ids]},
+		fields=["parent", "exercise", "sets", "reps", "rest_seconds", "notes"],
+		order_by="parent, idx",
+	)
+	exercise_names = {r.exercise for r in rows if r.exercise}
+	exercise_titles = {}
+	if exercise_names:
+		exercise_titles = {
+			e.name: e.exercise_name
+			for e in frappe.get_all("Exercise", filters={"name": ["in", list(exercise_names)]}, fields=["name", "exercise_name"])
+		}
+	rows_by_parent = {}
+	for r in rows:
+		rows_by_parent.setdefault(r.parent, []).append({
+			"exercise_name": exercise_titles.get(r.exercise) or r.exercise,
+			"sets": r.sets,
+			"reps": r.reps,
+			"rest_seconds": r.rest_seconds,
+			"notes": r.notes,
+		})
+	for p in assigned_workout_plans:
+		p["exercises"] = rows_by_parent.get(p.name, [])
+
+
+def _attach_diet_plan_labels(assigned_diet_plans, sessions):
+	"""Same idea as _attach_workout_plan_labels() above, but for Diet Plan /
+	Assigned Diet Plan - a member's diet plan assignments get a `label` key,
+	and each already-logged PT Session that references one gets a
+	`diet_plan_label` key.
+	"""
+	plan_names = {p.diet_plan for p in assigned_diet_plans if p.diet_plan}
+	plan_titles = {}
+	if plan_names:
+		plan_titles = {
+			p.name: p.plan_name
+			for p in frappe.get_all("Diet Plan", filters={"name": ["in", list(plan_names)]}, fields=["name", "plan_name"])
+		}
+	label_by_adp = {}
+	for p in assigned_diet_plans:
+		title = plan_titles.get(p.diet_plan) or "Custom"
+		p["label"] = f"{title} ({p.status})"
+		label_by_adp[p.name] = title
+	for s in sessions:
+		if s.get("assigned_diet_plan"):
+			s["diet_plan_label"] = label_by_adp.get(s["assigned_diet_plan"])
+
+
 @frappe.whitelist()
 def get_pt_purchase(name):
 	_check_staff()
@@ -1226,7 +1323,17 @@ def get_pt_purchase(name):
 	sessions = frappe.get_all(
 		"PT Session",
 		filters={"pt_package_purchase": name},
-		fields=["name", "trainer", "session_date", "start_time", "duration_minutes", "status", "notes"],
+		fields=[
+			"name",
+			"trainer",
+			"session_date",
+			"start_time",
+			"duration_minutes",
+			"status",
+			"notes",
+			"assigned_workout_plan",
+			"assigned_diet_plan",
+		],
 		order_by="session_date desc, creation desc",
 	)
 	payments = frappe.get_all(
@@ -1235,20 +1342,63 @@ def get_pt_purchase(name):
 		fields=["name", "payment_type", "amount", "mode_of_payment", "payment_date", "reference_no", "collected_by", "journal_entry"],
 		order_by="payment_date desc, creation desc",
 	)
+	# The member's own workout-plan assignments (created here on the Log
+	# Session form, or from Members.vue's own "Assign Workout Plan" popup) -
+	# offered so a trainer can tie a session to one without leaving this
+	# page, and re-fetched (not just appended to client-side) whenever a new
+	# one is created here so its label always comes from the server.
+	assigned_workout_plans = frappe.get_all(
+		"Assigned Workout Plan",
+		filters={"member": purchase.member},
+		fields=["name", "workout_plan", "status"],
+		order_by="creation desc",
+	)
+	_attach_workout_plan_labels(assigned_workout_plans, sessions)
+	_attach_workout_plan_exercises(assigned_workout_plans)
+	# Same idea, but for the member's diet plan assignments.
+	assigned_diet_plans = frappe.get_all(
+		"Assigned Diet Plan",
+		filters={"member": purchase.member},
+		fields=["name", "diet_plan", "status"],
+		order_by="creation desc",
+	)
+	_attach_diet_plan_labels(assigned_diet_plans, sessions)
 	purchase_dict = purchase.as_dict()
 	_attach_member_names([purchase_dict])
-	return {"purchase": purchase_dict, "sessions": sessions, "payments": payments}
+	return {
+		"purchase": purchase_dict,
+		"sessions": sessions,
+		"payments": payments,
+		"assigned_workout_plans": assigned_workout_plans,
+		"assigned_diet_plans": assigned_diet_plans,
+	}
 
 
 @frappe.whitelist()
 def create_pt_session(
-	pt_package_purchase, trainer, session_date=None, start_time=None, duration_minutes=None, status="Scheduled", notes=None
+	pt_package_purchase,
+	trainer,
+	session_date=None,
+	start_time=None,
+	duration_minutes=None,
+	status="Scheduled",
+	notes=None,
+	assigned_workout_plan=None,
+	assigned_diet_plan=None,
 ):
 	"""Log Session form on a selected purchase's detail panel. PT Session's
 	own on_update() (see generate.py) recalculates the parent purchase's
 	sessions_used/sessions_remaining/status immediately after insert, so the
 	caller doesn't need a separate refresh step for those - just re-fetching
 	get_pt_purchase() afterward picks up the new totals.
+
+	assigned_workout_plan/assigned_diet_plan are optional and just plain
+	Links - no ownership check that they actually belong to this purchase's
+	member, since they're only ever offered here from that same member's own
+	get_pt_purchase().assigned_workout_plans/assigned_diet_plans lists in the
+	first place (a trainer with staff_rw() on PT Session could set any value
+	via the API directly regardless, same trust level as trainer/notes
+	below).
 	"""
 	_check_staff()
 	session = frappe.new_doc("PT Session")
@@ -1259,6 +1409,8 @@ def create_pt_session(
 	session.duration_minutes = cint(duration_minutes) or 60
 	session.status = status or "Scheduled"
 	session.notes = (notes or "").strip() or None
+	session.assigned_workout_plan = assigned_workout_plan or None
+	session.assigned_diet_plan = assigned_diet_plan or None
 	session.insert()
 	return session.as_dict()
 
@@ -1285,6 +1437,14 @@ def collect_pt_payment(pt_package_purchase, amount, mode_of_payment, payment_typ
 	(see generate.py) rejects a refund larger than what's actually been paid.
 	"""
 	_check_staff()
+	# Same routing as collect_payment() above, for doctor-requested PT packages.
+	from gym_management.healthcare_requests import route_payment_to_invoice
+
+	routed = route_payment_to_invoice(
+		"PT Package Purchase", pt_package_purchase, amount, mode_of_payment, payment_type, reference_no, remarks
+	)
+	if routed:
+		return routed
 	payment = frappe.new_doc("PT Payment")
 	payment.pt_package_purchase = pt_package_purchase
 	payment.payment_type = payment_type

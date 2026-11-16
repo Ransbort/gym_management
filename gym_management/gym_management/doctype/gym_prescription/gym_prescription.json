@@ -1,0 +1,109 @@
+{
+ "actions": [],
+ "creation": "2026-11-16 00:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "request_type",
+  "membership_plan",
+  "pt_package",
+  "priority",
+  "column_break_gp01",
+  "notes",
+  "gym_member",
+  "gym_membership",
+  "pt_package_purchase",
+  "invoice"
+ ],
+ "fields": [
+  {
+   "default": "Membership",
+   "fieldname": "request_type",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Request Type",
+   "options": "Membership\nPT Package",
+   "reqd": 1
+  },
+  {
+   "depends_on": "eval:doc.request_type=='Membership'",
+   "fieldname": "membership_plan",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Membership Plan",
+   "mandatory_depends_on": "eval:doc.request_type=='Membership'",
+   "options": "Membership Plan"
+  },
+  {
+   "depends_on": "eval:doc.request_type=='PT Package'",
+   "fieldname": "pt_package",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "PT Package",
+   "mandatory_depends_on": "eval:doc.request_type=='PT Package'",
+   "options": "PT Package"
+  },
+  {
+   "fieldname": "priority",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Priority",
+   "options": "\nLow\nMedium\nHigh"
+  },
+  {
+   "fieldname": "column_break_gp01",
+   "fieldtype": "Column Break"
+  },
+  {
+   "description": "Clinical guidance for the gym, e.g. restrictions or goals. Copied to the member's health notes on accept.",
+   "fieldname": "notes",
+   "fieldtype": "Small Text",
+   "label": "Notes for Gym"
+  },
+  {
+   "fieldname": "gym_member",
+   "fieldtype": "Link",
+   "label": "Gym Member",
+   "no_copy": 1,
+   "options": "Gym Member",
+   "read_only": 1
+  },
+  {
+   "fieldname": "gym_membership",
+   "fieldtype": "Link",
+   "label": "Gym Membership",
+   "no_copy": 1,
+   "options": "Gym Membership",
+   "read_only": 1
+  },
+  {
+   "fieldname": "pt_package_purchase",
+   "fieldtype": "Link",
+   "label": "PT Package Purchase",
+   "no_copy": 1,
+   "options": "PT Package Purchase",
+   "read_only": 1
+  },
+  {
+   "fieldname": "invoice",
+   "fieldtype": "Link",
+   "label": "Invoice",
+   "no_copy": 1,
+   "options": "Sales Invoice",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2026-11-16 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Gym Management",
+ "name": "Gym Prescription",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

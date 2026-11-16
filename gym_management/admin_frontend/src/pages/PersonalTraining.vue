@@ -172,6 +172,37 @@
             <input v-model="sessionForm.duration_minutes" type="number" min="1" step="1" placeholder="Mins" class="w-full rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-sm text-slate-900 placeholder-slate-400 focus:border-[var(--gym-accent)] focus:outline-none focus:ring-2 focus:ring-[var(--gym-accent-ring)]" />
           </div>
           <input v-model="sessionForm.notes" type="text" placeholder="Notes (optional)" class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:border-[var(--gym-accent)] focus:outline-none focus:ring-2 focus:ring-[var(--gym-accent-ring)]" />
+          <select v-model="sessionForm.assigned_workout_plan" class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-[var(--gym-accent)] focus:outline-none focus:ring-2 focus:ring-[var(--gym-accent-ring)]">
+            <option value="">No workout plan</option>
+            <option v-for="p in selected.assigned_workout_plans" :key="p.name" :value="p.name">{{ p.label }}</option>
+          </select>
+          <div v-if="selectedWorkoutPlanExercises.length" class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-600">
+            <p class="mb-1 font-semibold text-slate-500">Exercises</p>
+            <ul class="space-y-0.5">
+              <li v-for="(ex, i) in selectedWorkoutPlanExercises" :key="i" class="flex items-center justify-between gap-2">
+                <span class="min-w-0 flex-1 truncate">{{ ex.exercise_name }}<span v-if="ex.notes" class="text-slate-400"> - {{ ex.notes }}</span></span>
+                <span class="shrink-0 text-slate-400">{{ ex.sets }}x{{ ex.reps }}</span>
+              </li>
+            </ul>
+          </div>
+          <button
+            type="button"
+            class="-mt-1 self-start text-xs font-semibold text-[var(--gym-accent)] hover:text-[var(--gym-accent-hover)]"
+            @click="showAssignWorkoutPlan = true"
+          >
+            <i class="bi bi-plus-lg"></i> Assign a new workout plan
+          </button>
+          <select v-model="sessionForm.assigned_diet_plan" class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-[var(--gym-accent)] focus:outline-none focus:ring-2 focus:ring-[var(--gym-accent-ring)]">
+            <option value="">No diet plan</option>
+            <option v-for="p in selected.assigned_diet_plans" :key="p.name" :value="p.name">{{ p.label }}</option>
+          </select>
+          <button
+            type="button"
+            class="-mt-1 self-start text-xs font-semibold text-[var(--gym-accent)] hover:text-[var(--gym-accent-hover)]"
+            @click="showAssignDietPlan = true"
+          >
+            <i class="bi bi-plus-lg"></i> Assign a new diet plan
+          </button>
           <button type="submit" :disabled="loggingSession"
             class="rounded-lg bg-[var(--gym-accent)] px-3 py-2 text-sm font-semibold text-white hover:bg-[var(--gym-accent-hover)] disabled:opacity-60">
             {{ loggingSession ? 'Logging...' : 'Log Session' }}
@@ -185,6 +216,8 @@
             <li v-for="s in selected.sessions" :key="s.name" class="flex items-center justify-between gap-2 text-slate-600">
               <span class="min-w-0 flex-1 truncate">
                 {{ s.session_date }}{{ s.start_time ? ' ' + s.start_time.slice(0, 5) : '' }} - {{ s.trainer }}
+                <span v-if="s.workout_plan_label" class="text-slate-400"> · {{ s.workout_plan_label }}</span>
+                <span v-if="s.diet_plan_label" class="text-slate-400"> · {{ s.diet_plan_label }}</span>
                 <span v-if="s.notes" class="text-slate-400"> ({{ s.notes }})</span>
               </span>
               <select
@@ -203,12 +236,27 @@
         </div>
       </div>
     </section>
+
+    <AssignWorkoutPlanModal
+      v-if="showAssignWorkoutPlan && selected"
+      :member="selected.purchase.member"
+      @close="showAssignWorkoutPlan = false"
+      @created="onWorkoutPlanAssigned"
+    />
+    <AssignDietPlanModal
+      v-if="showAssignDietPlan && selected"
+      :member="selected.purchase.member"
+      @close="showAssignDietPlan = false"
+      @created="onDietPlanAssigned"
+    />
   </div>
 </template>
 
 <script setup>
-import { onMounted, reactive, ref, watch } from 'vue';
+import { computed, onMounted, reactive, ref, watch } from 'vue';
 import { call, firstServerMessage } from '@/api/frappe';
+import AssignDietPlanModal from '@/components/AssignDietPlanModal.vue';
+import AssignWorkoutPlanModal from '@/components/AssignWorkoutPlanModal.vue';
 import NewPtPurchaseModal from '@/components/NewPtPurchaseModal.vue';
 import { useUiStore } from '@/stores/ui';
 
@@ -230,6 +278,8 @@ const collecting = ref(false);
 const loggingSession = ref(false);
 const sendingLink = ref(false);
 const paymentLink = ref('');
+const showAssignWorkoutPlan = ref(false);
+const showAssignDietPlan = ref(false);
 
 const paymentForm = reactive({ amount: '', mode_of_payment: '', reference_no: '', payment_type: 'Payment' });
 const sessionForm = reactive({
@@ -238,6 +288,18 @@ const sessionForm = reactive({
   start_time: '',
   duration_minutes: 60,
   notes: '',
+  assigned_workout_plan: '',
+  assigned_diet_plan: '',
+});
+
+// The currently-picked workout plan's exercises (from that Assigned Workout
+// Plan's own Workout Configuration rows, sent by get_pt_purchase()) - shown
+// read-only under the dropdown so a trainer can see what it actually
+// prescribes without leaving this page.
+const selectedWorkoutPlanExercises = computed(() => {
+  if (!selected.value || !sessionForm.assigned_workout_plan) return [];
+  const plan = selected.value.assigned_workout_plans?.find((p) => p.name === sessionForm.assigned_workout_plan);
+  return plan?.exercises || [];
 });
 
 async function loadOptions() {
@@ -285,9 +347,39 @@ async function selectPurchase(name) {
     sessionForm.start_time = '';
     sessionForm.duration_minutes = 60;
     sessionForm.notes = '';
+    sessionForm.assigned_workout_plan = '';
+    sessionForm.assigned_diet_plan = '';
   } catch (err) {
     ui.showToast(firstServerMessage(err) || 'Could not load this purchase.', 'error');
   }
+}
+
+// Re-fetches the selected purchase's detail (picking up a newly-assigned
+// workout plan's server-rendered label) without touching sessionForm the
+// way selectPurchase() above does - so assigning a plan mid-way through
+// filling out Log Session doesn't wipe whatever the trainer already typed.
+async function refreshSelectedPurchase() {
+  if (!selected.value) return;
+  try {
+    selected.value = await call('gym_management.admin_api.get_pt_purchase', { name: selected.value.purchase.name });
+  } catch (err) {
+    // Non-fatal: worst case the new plan doesn't show in the dropdown until
+    // the next full selectPurchase() (e.g. after logging this session).
+  }
+}
+
+function onWorkoutPlanAssigned(plan) {
+  showAssignWorkoutPlan.value = false;
+  ui.showToast('Workout plan assigned.');
+  sessionForm.assigned_workout_plan = plan.name;
+  refreshSelectedPurchase();
+}
+
+function onDietPlanAssigned(plan) {
+  showAssignDietPlan.value = false;
+  ui.showToast('Diet plan assigned.');
+  sessionForm.assigned_diet_plan = plan.name;
+  refreshSelectedPurchase();
 }
 
 async function submitPayment() {
@@ -353,6 +445,8 @@ async function submitSession() {
       start_time: sessionForm.start_time,
       duration_minutes: sessionForm.duration_minutes,
       notes: sessionForm.notes,
+      assigned_workout_plan: sessionForm.assigned_workout_plan,
+      assigned_diet_plan: sessionForm.assigned_diet_plan,
     });
     ui.showToast('Session logged.');
     await selectPurchase(selected.value.purchase.name);

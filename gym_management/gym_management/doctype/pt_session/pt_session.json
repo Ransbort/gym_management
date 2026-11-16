@@ -20,6 +20,8 @@
   "session_date",
   "start_time",
   "duration_minutes",
+  "assigned_workout_plan",
+  "assigned_diet_plan",
   "section_break_1",
   "status",
   "column_break_2",
@@ -80,6 +82,20 @@
    "fieldtype": "Int",
    "label": "Duration Minutes",
    "default": 60
+  },
+  {
+   "fieldname": "assigned_workout_plan",
+   "fieldtype": "Link",
+   "label": "Workout Plan",
+   "options": "Assigned Workout Plan",
+   "description": "Optional - ties this session to one of the member's workout plan assignments (Members.vue's own \"Assign Workout Plan\", or created inline here), so what was worked on is easy to trace back later."
+  },
+  {
+   "fieldname": "assigned_diet_plan",
+   "fieldtype": "Link",
+   "label": "Diet Plan",
+   "options": "Assigned Diet Plan",
+   "description": "Optional - same idea as Workout Plan above, but for one of the member's diet plan assignments."
   },
   {
    "fieldname": "section_break_1",

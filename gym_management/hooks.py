@@ -54,6 +54,21 @@ website_route_rules = [
 # frappe_paystack isn't installed on a given site - this doctype then simply
 # never exists there, so the event never fires.
 doc_events = {
+	# Healthcare integration (doctor-issued gym requests) - see
+	# integrations/healthcare.py. Harmless on sites without healthcare:
+	# these doctypes just never fire.
+	"Patient Encounter": {
+		"validate": "gym_management.integrations.healthcare.validate_encounter",
+		"on_update": "gym_management.integrations.healthcare.notify_new_gym_requests",
+		"before_cancel": "gym_management.integrations.healthcare.block_cancel_with_accepted_requests",
+	},
+	"Payment Entry": {
+		"on_submit": "gym_management.integrations.healthcare.sync_from_payment_entry",
+		"on_cancel": "gym_management.integrations.healthcare.sync_from_payment_entry",
+	},
+	"Sales Invoice": {
+		"on_cancel": "gym_management.integrations.healthcare.sync_from_sales_invoice",
+	},
 	"Paystack Payment Log": {
 		"on_update": [
 			"gym_management.utils.paystack.sync_gym_membership_payment",
@@ -64,6 +79,10 @@ doc_events = {
 
 # Installation
 # ------------
+doctype_js = {
+	"Patient Encounter": "public/js/patient_encounter_gym.js",
+}
+
 after_install = "gym_management.install.after_install"
 after_migrate = "gym_management.install.after_migrate"
 

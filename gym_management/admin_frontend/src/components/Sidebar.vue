@@ -8,6 +8,10 @@
         active-class="!bg-[var(--gym-accent-tint)] !text-[var(--gym-accent)]"
       >
         <i :class="['bi', item.icon, 'text-lg']"></i>
+        <span
+          v-if="item.name === 'Requests' && requestCount"
+          class="absolute right-1 top-1 flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white"
+        >{{ requestCount > 99 ? '99+' : requestCount }}</span>
       </router-link>
     </nav>
 
@@ -30,10 +34,31 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { onMounted, onUnmounted, ref } from 'vue';
 import GymSettingsModal from '@/components/GymSettingsModal.vue';
+import { call } from '@/api/frappe';
+import { initSocket } from '@/socket';
 
 const showSettings = ref(false);
+
+// Badge on the Requests icon: doctor-issued gym requests still waiting to
+// be accepted (see healthcare_requests.py). Refreshed live on the same
+// realtime event Requests.vue listens to.
+const requestCount = ref(0);
+async function loadRequestCount() {
+  try {
+    requestCount.value = (await call('gym_management.healthcare_requests.get_gym_request_count')) || 0;
+  } catch (e) {
+    requestCount.value = 0;
+  }
+}
+onMounted(() => {
+  loadRequestCount();
+  initSocket().on('gym_request_update', loadRequestCount);
+});
+onUnmounted(() => {
+  initSocket().off('gym_request_update', loadRequestCount);
+});
 
 const items = [
   { name: 'Overview', to: '/', icon: 'bi-speedometer2', label: 'Overview' },
@@ -41,5 +66,6 @@ const items = [
   { name: 'Members', to: '/members', icon: 'bi-people', label: 'Members' },
   { name: 'Memberships', to: '/memberships', icon: 'bi-credit-card', label: 'Memberships' },
   { name: 'PersonalTraining', to: '/personal-training', icon: 'bi-stopwatch', label: 'Personal Training' },
+  { name: 'Requests', to: '/requests', icon: 'bi-clipboard2-pulse', label: 'Doctor Requests' },
 ];
 </script>

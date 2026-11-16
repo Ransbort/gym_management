@@ -72,6 +72,9 @@ def _sync_gym_membership(doc):
 	# uses before its Payment Entry creation - this can run from a guest
 	# webhook request (paystack_webhook is allow_guest=True), and
 	# collected_by's default="__user" should read as a real user, not Guest.
+	if _pay_request_invoice_instead(doc, "Gym Membership", mode_of_payment):
+		return
+
 	frappe.set_user("Administrator")
 	try:
 		payment = frappe.new_doc("Gym Membership Payment")
@@ -119,6 +122,9 @@ def _sync_pt_purchase(doc):
 		"Paystack Gateway Setting", {"enabled": 1, "company": doc.company}, "mode_of_payment"
 	) or "Paystack"
 
+	if _pay_request_invoice_instead(doc, "PT Package Purchase", mode_of_payment):
+		return
+
 	frappe.set_user("Administrator")
 	try:
 		payment = frappe.new_doc("PT Payment")
@@ -133,3 +139,38 @@ def _sync_pt_purchase(doc):
 		frappe.db.commit()
 	finally:
 		frappe.set_user("Guest")
+
+
+def _pay_request_invoice_instead(doc, doctype, mode_of_payment):
+	"""Doctor-requested memberships/PT purchases are billed by a hospital
+	Sales Invoice (see healthcare_requests.py) - a Paystack payment for one
+	pays that invoice via Payment Entry instead of creating a Gym Membership
+	Payment / PT Payment, so the income isn't booked twice and the Cashier
+	sees it paid. Returns True when it handled (or had already handled) the
+	log, False for ordinary gym records."""
+	from gym_management.healthcare_requests import linked_request_invoice, pay_request_invoice
+
+	invoice = linked_request_invoice(doctype, doc.linked_docname)
+	if not invoice:
+		return False
+	if frappe.db.exists("Payment Entry", {"reference_no": doc.name, "docstatus": 1}):
+		return True
+	outstanding = flt(frappe.db.get_value("Sales Invoice", invoice, "outstanding_amount"))
+	amount = min(flt(doc.amount_paid), outstanding)
+	if amount <= 0:
+		return True
+
+	frappe.set_user("Administrator")
+	try:
+		pay_request_invoice(
+			invoice,
+			amount,
+			mode_of_payment,
+			reference_no=doc.name,
+			remarks=f"Paystack payment - {doc.payment_reference or doc.transaction_id or doc.name}",
+			posting_date=doc.payment_date or nowdate(),
+		)
+		frappe.db.commit()
+	finally:
+		frappe.set_user("Guest")
+	return True

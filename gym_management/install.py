@@ -17,6 +17,7 @@ def after_install():
 	sync_workspace_sidebars()
 	ensure_dashboard_widgets()
 	ensure_payment_gateway()
+	setup_healthcare_integration()
 
 
 def after_migrate():
@@ -25,6 +26,18 @@ def after_migrate():
 	remove_retired_erpnext_stand_in_doctypes()
 	ensure_dashboard_widgets()
 	ensure_payment_gateway()
+	setup_healthcare_integration()
+
+
+def setup_healthcare_integration():
+	"""Gym Requests table on Patient Encounter + Gym Member.custom_patient,
+	only when the healthcare app is on this site."""
+	from gym_management.integrations.healthcare import setup_custom_fields
+
+	try:
+		setup_custom_fields()
+	except Exception:
+		frappe.log_error("Failed to set up healthcare integration fields", "Gym Management install")
 
 
 def create_roles():
